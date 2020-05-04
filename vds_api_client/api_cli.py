@@ -6,7 +6,8 @@ import click_datetime as click_dt
 import os
 import time
 from vds_api_client.vds_api_base import VdsApiBase, getpar_fromtext
-
+from vds_api_client.api_v2 import VdsApiV2
+setattr(VdsApiV2, '__str__', VdsApiBase.__str__)
 
 vds_user = os.environ.get('VDS_USER', None)
 vds_pass = os.environ.get('VDS_PASS', None)
@@ -196,7 +197,7 @@ def info(ctx, all_info, user_, product_list, roi):
 @click.pass_context
 def grid(ctx, config_file, products, lon_range, lat_range, date_range,
          fmt, n_proc, outfold, zipped, verbose):
-    from vds_api_client.api_v2 import VdsApiV2
+
     vds = VdsApiV2(ctx.obj['user'], ctx.obj['passwd'], debug=False)
     if ctx.obj['impersonate']:
         vds.impersonate(ctx.obj['impersonate'])
@@ -243,7 +244,7 @@ def grid(ctx, config_file, products, lon_range, lat_range, date_range,
 @click.pass_context
 def ts(ctx, config_file, products, latlons, rois, date_range, fmt,
        masked, av_win, clim, t, outfold, verbose):
-    from vds_api_client.api_v2 import VdsApiV2
+
     vds = VdsApiV2(ctx.obj['user'], ctx.obj['passwd'], debug=False)
     if ctx.obj['impersonate']:
         vds.impersonate(ctx.obj['impersonate'])
