@@ -336,7 +336,7 @@ class VdsApiV2(VdsApiBase):
     @retry(wait_exponential_multiplier=5000, wait_exponential_max=15000,
            stop_max_attempt_number=3, retry_on_exception=_http_error)
     def _submit_v2_req(self, call):
-        self.logger.debug('Submitting asynch. request with url=\n{}'.format(call))
+        self.logger.debug('Submitting async. request with uri=\n{}'.format(call))
         r1_dict = self._get_content(call)
         uuid = r1_dict['uuid']
         with open('{}.uuid'.format(uuid), 'w') as uuid_save:
