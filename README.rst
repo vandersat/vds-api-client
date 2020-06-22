@@ -289,7 +289,7 @@ Request time-series data using the `products/<api_name>/[point|roi]-time-series`
     vds.gen_time_series_requests(products=['SM-XN_V001_100'],
                                  start_time='2018-01-01', end_time='2018-01-03',
                                  lons=[6.5], lats=[41.5], rois=[527, 811])
-    vds.submit_asynch_requests()
+    vds.submit_async_requests()
     vds.download_async_files()
 
     # Get information on the downloaded files
