@@ -165,15 +165,16 @@ class VdsApiBase(object):
         Password for the vds api data service
         If left empty, the username will be read from
         the environment variable $VDS_PASS
-    debug: bool
-        Set True for higher verbosity
+    debug: bool or int
+        Set True for higher verbosity,
+        or use integer to set streamlevel (10 <= all messages, 50 > no messages)
     """
     def __init__(self, username=None, password=None, debug=True):
         self.rois = Rois(None)
         self.products = Products(None)
-        self.logger = setup_logging()
+        streamlevel = debug if isinstance(debug, int) else (10 if debug else 20)
+        self.logger = setup_logging(streamlevel=streamlevel)
         self._host = 'maps.vandersat.com/api/v2/'
-        self.debug = debug
         self._tested = False
         self._config = None
         self._api_calls = []
@@ -264,16 +265,20 @@ class VdsApiBase(object):
 
     @property
     def debug(self):
-        return self._debug
+        return self.streamlevel < 20
 
     @debug.setter
-    def debug(self, state):
-        state = True if state else False
-        if state:
-            self.logger.handlers[1].setLevel(logging.DEBUG)
-        self.logger.debug('ConcoleStr debug level set to {}'.format(state))
-        self.logger.debug('FileStream debug level set to {} (default)'.format(True))
-        self._debug = state
+    def debug(self, _state):
+        self.logger.error('Cannot change debug state through this property anymore')
+
+    @property
+    def streamlevel(self):
+        return next(filter(lambda x: type(x) is logging.StreamHandler, self.logger.handlers)).level
+
+    @streamlevel.setter
+    def streamlevel(self, level):
+        stream_handler = next(filter(lambda x: type(x) is logging.StreamHandler, self.logger.handlers))
+        stream_handler.setLevel(level)
 
     @property
     def overwrite(self):

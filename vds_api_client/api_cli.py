@@ -1,5 +1,4 @@
 
-import platform
 import subprocess
 import click
 import click_datetime as click_dt
@@ -201,7 +200,7 @@ def grid(ctx, config_file, products, lon_range, lat_range, date_range,
     vds = VdsApiV2(ctx.obj['user'], ctx.obj['passwd'], debug=False)
     if ctx.obj['impersonate']:
         vds.impersonate(ctx.obj['impersonate'])
-    vds.debug = verbose
+    vds.streamlevel = 10 if verbose else 20
     click.echo(vds)
     if outfold:
         vds.outfold = outfold
@@ -248,7 +247,7 @@ def ts(ctx, config_file, products, latlons, rois, date_range, fmt,
     vds = VdsApiV2(ctx.obj['user'], ctx.obj['passwd'], debug=False)
     if ctx.obj['impersonate']:
         vds.impersonate(ctx.obj['impersonate'])
-    vds.debug = verbose
+    vds.streamlevel = 10 if verbose else 20
     click.echo(vds)
     if outfold:
         vds.outfold = outfold

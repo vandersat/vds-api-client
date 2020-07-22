@@ -173,7 +173,7 @@ class VdsApiV2(VdsApiBase):
                                  start_time=None, end_time=None,
                                  lats=None, lons=None, rois=None,
                                  file_format=None,
-                                 av_win=None, masked=None, clim=None, t=None,
+                                 av_win=None, av_win_dir=None, masked=None, clim=None, t=None,
                                  log_config=False):
         """
         Generate one or more uris for the `[point/roi]-time-series` enpoints.
@@ -193,19 +193,26 @@ class VdsApiV2(VdsApiBase):
         end_time: str or datetime
             date string YYYY-MM-DD
         lats: list of float
+            list of latitude values
         lons: list or float
+            list of longitude values
         rois: list of (int or str)
             Region id or name
         file_format: str
-            format to download: [json, (default: csv)]
+            Format of the output {[csv], json}
         av_win: int
-            Averaging window +/- day window, added as second column to the output
+            For adding a running mean with a avg_window_days day window.
+            Direction depends on avg_window_direction setting.
+        av_win_dir: str
+            centered or backward running average.
+            - 'center'
+            - 'backward'
         masked: bool
             Include masked data in output
         clim: bool
-            Add climatology column based on the average column
+            Add climatology column calculated based on the average column
         t: int
-            Calculate derived root zone as additional column with given `T` value (days)
+            Calculate derived root zone as additional column with given smoothing `T` value (days)
         log_config: bool
             Write the used configuration to the logging file and steam
         """
@@ -220,10 +227,13 @@ class VdsApiV2(VdsApiBase):
         if (rois is not None) and (type(rois) not in [list, tuple]):
             rois = [rois]
 
-        config = dict(api_call='time-series', products=products, start_time=start_time, end_time=end_time,
+        config = dict(api_call='time-series', products=products,
+                      start_time=start_time, end_time=end_time,
                       lats=lats, lons=lons, rois=rois, file_format=file_format,
-                      av_win=av_win, masked=masked, clim=clim, t=t)
-        defaults = dict(file_format='csv', av_win=0, masked=False, clim=False, t=None,
+                      av_win=av_win, av_win_dir=av_win_dir,
+                      masked=masked, clim=clim, t=t)
+        defaults = dict(file_format='csv', av_win=0, masked=False,
+                        clim=False, t=None, av_win_dir='center',
                         lats=[], lons=[], rois=[])
         config = configure(config, defaults, config_file, self.logger)
         for key in ['lons', 'lats', 'rois', 'products']:
@@ -231,10 +241,14 @@ class VdsApiV2(VdsApiBase):
                 config[key] = [config[key]]
         config['products'] = self.check_valid_products(config['products'])
         config['rois'] = self.check_valid_rois(config['rois'])
-        if (not len(config['lons']) == len(config['lats'])) or \
-                (not config['lons'] and not config['rois']):
+        if ((not len(config['lons']) == len(config['lats']))
+                or (not config['lons'] and not config['rois'])):
             self.logger.warning('Set either lons/lats or rois, no configuration was done')
             return
+        if config['av_win'] < 0:
+            raise ValueError('No window_size < 0 allowed, please revise settings')
+        if config['av_win_dir'] not in {'center', 'backward'}:
+            raise ValueError('Window direction should be in {"center", "backward"}')
         self._config = config
         if log_config:
             self.log_config('INFO')
@@ -303,12 +317,13 @@ class VdsApiV2(VdsApiBase):
                     for loc in loc_list:
                         uri = ('https://{host}products/{prod}/{endpoint}?'
                                'start_time={start}&end_time={end}&{loc}&format={fmt}'
-                               '&avg_window_days={av_win}&include_masked_data={masked}&'
-                               'climatology={clim}'
+                               '&avg_window_days={av_win}&avg_window_direction={av_win_dir}'
+                               '&include_masked_data={masked}&climatology={clim}'
                                .format(host=self.host, prod=prod, endpoint=endpnt,
                                        start=self._config['start_time'], end=self._config['end_time'],
                                        loc=loc, fmt=self._config['file_format'],
                                        av_win=self._config['av_win'],  # default 0
+                                       av_win_dir=self._config['av_win_dir'],
                                        masked='true' if self._config['masked'] else 'false',
                                        clim='true' if self._config['clim'] else 'false'))
                         if self._config['t'] is not None:
