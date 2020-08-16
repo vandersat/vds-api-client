@@ -1,0 +1,11 @@
+# Configuration file
+#
+# getarea:              products, date, lat_min, lat_max, lon_min, lon_max, file_format
+
+start_date = 2020-01-01
+end_date = 2020-01-03
+lat_min = 66
+lat_max = 67
+lon_min = -6
+lon_max = -5
+products = TEST-PRODUCT_V001_25000
