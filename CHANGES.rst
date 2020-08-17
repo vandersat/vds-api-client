@@ -9,7 +9,7 @@ Scheduled for next release
 
 Version 2.0.2
 =============
-- Re-instroduce tests for CI
+- Re-introduce tests for CI
 
 
 Version 2.0.1
