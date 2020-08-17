@@ -7,6 +7,15 @@ Scheduled for next release
 
 - Extend existing time-series synchronously using the get_val method
 
+Version 2.0.2
+=============
+- Re-instroduce tests for CI
+
+
+Version 2.0.1
+=============
+- Add option backward average on time-series
+- Set debug level in init as integer between 0-50
 
 ----
 
