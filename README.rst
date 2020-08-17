@@ -2,6 +2,8 @@
 vds_api_client
 ==============
 
+.. image:: https://travis-ci.org/vandersat/vds-api-client.svg?branch=master
+    :target: https://travis-ci.org/vandersat/vds-api-client
 
 (Command line) interface to download data batches directly from the VanderSat API
 
