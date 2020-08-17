@@ -1,0 +1,10 @@
+# Configuration file
+#
+# time-series:          products, lats, lons, rois, date_start, date_end
+
+lats = 66.875, 66.125
+lons = -5.875, -5.125
+rois = 25009, Right
+start_time = 2020-01-01
+end_time = 2020-01-03
+products = TEST-PRODUCT_V001_25000

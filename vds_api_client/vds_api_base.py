@@ -16,11 +16,11 @@ from vds_api_client.types import Rois, Products
 
 
 # logging
-def setup_logging(filelevel=10, streamlevel=20, path=''):
+def setup_logging(filelevel=10, streamlevel=20):
     logger = logging.getLogger('vds_api')
     if len(logger.handlers) == 0:
         logger.setLevel(logging.DEBUG)
-        fh = logging.FileHandler(os.path.join(path, 'vds_api.log'))
+        fh = logging.FileHandler('vds_api.log')
         ch = logging.StreamHandler()
         formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)8s - %(funcName)s @ thr %(thread)05d' +
                                       '  - %(message)s', datefmt='%Y/%m/%d %I:%M:%S')
@@ -84,7 +84,7 @@ def getpar_fromtext(textfile, parameter):
 
 
 def api_get(uri, expected_fn='', out_path='', overwrite=False, str_lvl=20, credentials=None, headers=None):
-    logger = setup_logging(streamlevel=str_lvl, path=out_path)
+    logger = setup_logging(streamlevel=str_lvl)
     if not overwrite and os.path.exists(expected_fn):
         logger.debug('File {} exists, skipping download'.format(expected_fn))
         return -1, expected_fn
@@ -250,8 +250,7 @@ class VdsApiBase(object):
         self.logger.debug('Outfold set to {}'.format(out_path))
         self._out_path = out_path
         self.logger = setup_logging(self.logger.handlers[0].level,
-                                    self.logger.handlers[1].level,
-                                    path=out_path)
+                                    self.logger.handlers[1].level)
 
     def set_outfold(self, path):
         """

@@ -1,0 +1,12 @@
+language: python
+jobs:
+  include:
+    - name: "TEST Python 3.6"
+      python: 3.6
+install:
+  - pip install -r requirements.txt
+  - pip install -r test-requirements.txt
+  - pip install .
+# command to run tests
+script:
+  - python setup.py test
