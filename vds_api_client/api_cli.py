@@ -116,16 +116,16 @@ def download_if_unfinished(api_instance, n_jobs=1):
               show_default=pass_show)
 @click.option('--impersonate', '-i',
               help='Username to impersonate')
-@click.option('--host',
+@click.option('--environment',
               type=click.Choice(['maps', 'staging', 'test']),
-              help='Host to use for requests https://{host}.vandersat.com')
+              help='Environment to use for requests https://{environment}.vandersat.com')
 @click.pass_context
-def api(ctx, username, password, impersonate, host):
+def api(ctx, username, password, impersonate, environment):
     ctx.ensure_object(dict)
     ctx.obj['user'] = username
     ctx.obj['passwd'] = password
     ctx.obj['impersonate'] = impersonate
-    ctx.obj['host'] = host
+    ctx.obj['environment'] = environment
     pass
 
 
@@ -154,8 +154,8 @@ def test(ctx):
 @click.pass_context
 def info(ctx, all_info, user_, product_list, roi):
     vds = VdsApiBase(ctx.obj['user'], ctx.obj['passwd'], debug=False)
-    if ctx.obj['host'] is not None:
-        vds.host = ctx.obj['host']
+    if ctx.obj['environment'] is not None:
+        vds.host = ctx.obj['environment']
     if ctx.obj['impersonate']:
         vds.impersonate(ctx.obj['impersonate'])
     bv = vds._get_content('http://{}status/'.format(vds.host))['backend_version']
@@ -204,8 +204,8 @@ def grid(ctx, config_file, products, lon_range, lat_range, date_range,
          fmt, n_proc, outfold, zipped, verbose):
 
     vds = VdsApiV2(ctx.obj['user'], ctx.obj['passwd'], debug=False)
-    if ctx.obj['host'] is not None:
-        vds.host = ctx.obj['host']
+    if ctx.obj['environment'] is not None:
+        vds.host = ctx.obj['environment']
     if ctx.obj['impersonate']:
         vds.impersonate(ctx.obj['impersonate'])
     vds.streamlevel = 10 if verbose else 20
@@ -253,8 +253,8 @@ def ts(ctx, config_file, products, latlons, rois, date_range, fmt,
        masked, av_win, clim, t, outfold, verbose):
 
     vds = VdsApiV2(ctx.obj['user'], ctx.obj['passwd'], debug=False)
-    if ctx.obj['host'] is not None:
-        vds.host = ctx.obj['host']
+    if ctx.obj['environment'] is not None:
+        vds.host = ctx.obj['environment']
     if ctx.obj['impersonate']:
         vds.impersonate(ctx.obj['impersonate'])
     vds.streamlevel = 10 if verbose else 20
