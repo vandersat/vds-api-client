@@ -115,13 +115,17 @@ def download_if_unfinished(api_instance, n_jobs=1):
               default=vds_pass if vds_pass else pass_show,
               show_default=pass_show)
 @click.option('--impersonate', '-i',
-              help='User to impersonate')
+              help='Username to impersonate')
+@click.option('--environment',
+              type=click.Choice(['maps', 'staging', 'test']),
+              help='Environment to use for requests https://{environment}.vandersat.com')
 @click.pass_context
-def api(ctx, username, password, impersonate):
+def api(ctx, username, password, impersonate, environment):
     ctx.ensure_object(dict)
     ctx.obj['user'] = username
     ctx.obj['passwd'] = password
     ctx.obj['impersonate'] = impersonate
+    ctx.obj['environment'] = environment
     pass
 
 
@@ -131,8 +135,8 @@ def test(ctx):
     vds = VdsApiBase(ctx.obj['user'], ctx.obj['passwd'], debug=False)
     if ctx.obj['impersonate']:
         vds.impersonate(ctx.obj['impersonate'])
-    for bse in ['maps', 'staging', 'test']:
-        vds.base = bse
+    for host in ['maps', 'staging', 'test']:
+        vds.host = host
         start = time.time()
         click.echo(vds)
         bv = vds._get_content('http://{}status/'.format(vds.host))['backend_version']
@@ -150,6 +154,8 @@ def test(ctx):
 @click.pass_context
 def info(ctx, all_info, user_, product_list, roi):
     vds = VdsApiBase(ctx.obj['user'], ctx.obj['passwd'], debug=False)
+    if ctx.obj['environment'] is not None:
+        vds.host = ctx.obj['environment']
     if ctx.obj['impersonate']:
         vds.impersonate(ctx.obj['impersonate'])
     bv = vds._get_content('http://{}status/'.format(vds.host))['backend_version']
@@ -198,6 +204,8 @@ def grid(ctx, config_file, products, lon_range, lat_range, date_range,
          fmt, n_proc, outfold, zipped, verbose):
 
     vds = VdsApiV2(ctx.obj['user'], ctx.obj['passwd'], debug=False)
+    if ctx.obj['environment'] is not None:
+        vds.host = ctx.obj['environment']
     if ctx.obj['impersonate']:
         vds.impersonate(ctx.obj['impersonate'])
     vds.streamlevel = 10 if verbose else 20
@@ -245,6 +253,8 @@ def ts(ctx, config_file, products, latlons, rois, date_range, fmt,
        masked, av_win, clim, t, outfold, verbose):
 
     vds = VdsApiV2(ctx.obj['user'], ctx.obj['passwd'], debug=False)
+    if ctx.obj['environment'] is not None:
+        vds.host = ctx.obj['environment']
     if ctx.obj['impersonate']:
         vds.impersonate(ctx.obj['impersonate'])
     vds.streamlevel = 10 if verbose else 20
