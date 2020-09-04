@@ -1,18 +1,16 @@
 
 # external packages
 import requests
-from builtins import object
 from joblib import delayed, Parallel
 
 # Python packages
-import json
 import os
 
-import re
 import logging
 
 # This project
 from vds_api_client.types import Rois, Products
+from vds_api_client.requester import Requester
 
 
 # logging
@@ -83,14 +81,14 @@ def getpar_fromtext(textfile, parameter):
     return par
 
 
-def api_get(uri, expected_fn='', out_path='', overwrite=False, str_lvl=20, credentials=None, headers=None):
+def api_get(uri, expected_fn='', out_path='', overwrite=False, str_lvl=20, auth=None, headers=None):
     logger = setup_logging(streamlevel=str_lvl)
     if not overwrite and os.path.exists(expected_fn):
         logger.debug('File {} exists, skipping download'.format(expected_fn))
         return -1, expected_fn
     logger.debug('Starting request for file {}'.format(os.path.basename(expected_fn)))
     r = requests.get(uri, verify=True, stream=True,
-                     auth=(credentials['user'], credentials['passwd']),
+                     auth=auth,
                      headers=headers)
     if r.status_code == 200:
         ofname = os.path.join(out_path, r.headers['Content-Disposition'].split('=')[1])
@@ -151,7 +149,7 @@ def configure(config, defaults, config_file, logger):
     return config
 
 
-class VdsApiBase(object):
+class VdsApiBase(Requester):
     """
     VanderSat API object for easy downloading of VanderSat products
 
@@ -174,14 +172,12 @@ class VdsApiBase(object):
         self.products = Products(None)
         streamlevel = debug if isinstance(debug, int) else (10 if debug else 20)
         self.logger = setup_logging(streamlevel=streamlevel)
-        self._host = 'maps.vandersat.com/api/v2/'
         self._tested = False
         self._config = None
         self._api_calls = []
         self._out_path = ''
         self._overwrite = None
         self._streaming = True
-        self._headers = None
         self._outputs = []
         self._retry = []
         self._skipped = []
@@ -189,11 +185,11 @@ class VdsApiBase(object):
         self._notreached = 0
         self._failed = []
         if username and password:
-            self._credentials = dict(user=username, passwd=password)
+            self.set_auth((username, password))
         else:
             self.logger.info('Extracting credentials from environment variables')
-            self._credentials = dict(user=os.environ.get('VDS_USER', None),
-                                     passwd=os.environ.get('VDS_PASS', None))
+            self.set_auth((os.environ.get('VDS_USER', None),
+                           os.environ.get('VDS_PASS', None)))
         self._load_user_info()
         self.logger.info(' ================== VDS_API initialized ==================\n')
 
@@ -203,37 +199,14 @@ class VdsApiBase(object):
         self.usr_dict = self.get_user_info()
 
     def __str__(self):
-        show = '{} @ {}'.format(self._credentials['user'], self.host)
-        if self._headers is not None and 'X-VDS-UserId' in self._headers:
-            show = ('{} --impersonated by-- '.format(self._headers['X-VDS-UserId']) +
+        show = '{} @ {}'.format(self.auth[0], self.host)
+        if 'X-VDS-UserId' in self.headers:
+            show = ('{} --impersonated by-- '.format(self.headers['X-VDS-UserId']) +
                     show + '\n\ttrigger .forget() to remove impersonation')
         return show
 
     def __repr__(self):
         return str(self)
-
-    @property
-    def host(self):
-        return self._host
-
-    @host.setter
-    def host(self, host):
-        """
-        Set the host address
-
-        Parameters
-        ----------
-        host: str
-            One of {'maps', 'staging', 'test'}
-        """
-        env, ver = re.search(r'^(\w+)\.vandersat.com/api/(v\d)/', self._host).groups()
-        if host in ['maps', 'test', 'staging']:
-            self._host = '{}.vandersat.com/api/{}/'.format(host, ver)
-        else:
-            self.logger.critical("Server address unknown, choose from {'maps', 'staging', 'test'}")
-            raise ValueError('Unexpected server name received: {}'.format(host))
-        self._load_user_info()
-        self.logger.debug('Using server address: {}'.format(self._host))
 
     @property
     def outfold(self):
@@ -304,45 +277,8 @@ class VdsApiBase(object):
             elif log_level == 'INFO':
                 self.logger.info('CONFIG PARAMETER: {} = {}'.format(key, value))
 
-    def impersonate(self, user_email):
-        """
-        Impersonate user based on email
-
-        Parameters
-        ----------
-        user_email: str
-        """
-        if self._headers is None:
-            self._headers = {}
-        self._headers['X-VDS-UserId'] = user_email
-        self._load_user_info()
-
-    def forget(self):
-        """
-        Reset impersonation back to normal
-        """
-        self._headers.pop('X-VDS-UserId')
-        if not self._headers:
-            self._headers = None
-        self._load_user_info()
-
-    def _get_content(self, uri, **kwargs):
-        r = requests.get(uri, verify=True, stream=True,
-                         auth=(self._credentials['user'], self._credentials['passwd']),
-                         headers=self._headers,
-                         **kwargs)
-        r.raise_for_status()
-        return json.loads(r.content)
-
-    def _delete_content(self, uri, **kwargs):
-        r = requests.delete(uri, verify=True,
-                            auth=(self._credentials['user'], self._credentials['passwd']),
-                            headers=self._headers,
-                            **kwargs)
-        r.raise_for_status()
-
     def get_user_info(self):
-        usr_dict = self._get_content('https://maps.vandersat.com/api/v2/users/me')
+        usr_dict = self.get('https://maps.vandersat.com/api/v2/users/me')
         return usr_dict
 
     def get_products(self):
@@ -354,7 +290,7 @@ class VdsApiBase(object):
         products: Products
             Collection of Product objects
         """
-        product_json = self._get_content('https://maps.vandersat.com/api/v2/products/')
+        product_json = self.get('https://maps.vandersat.com/api/v2/products/')
         products = Products(product_json['products'])
         return products
 
@@ -388,7 +324,7 @@ class VdsApiBase(object):
         return out_products
 
     def get_rois(self):
-        roi_list = self._get_content('https://maps.vandersat.com/api/v2/rois')['rois']
+        roi_list = self.get('https://maps.vandersat.com/api/v2/rois')['rois']
         return Rois(None if not roi_list else roi_list)
 
     def check_valid_rois(self, rois):
@@ -437,7 +373,7 @@ class VdsApiBase(object):
                 rois = rois.ids_to_list()
         for roi in rois:
             uri = "https://maps.vandersat.com/api/v2/rois/{}".format(roi)
-            self._delete_content(uri)
+            self.delete(uri)
         self.rois = self.get_rois()
         self.logger.info('Deletion successful')
 
@@ -482,7 +418,7 @@ class VdsApiBase(object):
         processed = []
         for uri in self._api_calls:
             processed.append(api_get(uri, self._extract_fn(uri, op), out_path=op, overwrite=self.overwrite,
-                             str_lvl=self.logger.handlers[1].level, credentials=self._credentials, headers=self._headers))
+                             str_lvl=self.logger.handlers[1].level, auth=self.auth, headers=self.headers))
         self.review_results(processed, retry=False)
         self._api_calls = []
 
@@ -521,8 +457,8 @@ class VdsApiBase(object):
                                                              out_path=self._out_path,
                                                              overwrite=self.overwrite,
                                                              str_lvl=self.logger.handlers[1].level,
-                                                             credentials=self._credentials,
-                                                             headers=self._headers) for call in self._api_calls)
+                                                             auth=self.auth,
+                                                             headers=self.headers) for call in self._api_calls)
         self.logger.info('Checking for error messages')
         self.review_results(processed)
         self.retry()

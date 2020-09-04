@@ -1,5 +1,6 @@
 import re
 from math import ceil
+from vds_api_client.requester import Requester
 
 
 class Products(object):
@@ -192,7 +193,7 @@ class Rois(object):
         return [roi.id for roi in self._rois]
 
 
-class Roi(object):
+class Roi(Requester):
     """
     Roi object
 

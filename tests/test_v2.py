@@ -9,6 +9,7 @@ import pandas as pd
 
 def test_gridded_config(credentials, example_config_area):
     vds = VdsApiV2(credentials['user'], credentials['pw'])
+    vds.environment = 'staging'
     vds.gen_gridded_data_request(gen_uri=False,
                                  config_file=example_config_area,
                                  products=['TEST-PRODUCT_V001_25000'],
@@ -32,6 +33,7 @@ def test_gridded_config(credentials, example_config_area):
 
 def test_ts_config(credentials, example_config_ts):
     vds = VdsApiV2(credentials['user'], credentials['pw'])
+    vds.environment = 'staging'
     vds.gen_time_series_requests(gen_uri=False,
                                  config_file=example_config_ts,
                                  products=['TEST-PRODUCT_V001_25000'],
@@ -58,14 +60,15 @@ def test_ts_config(credentials, example_config_ts):
 
 def test_gen_uri_grid(credentials, example_config_area):
     vds = VdsApiV2(credentials['user'], credentials['pw'])
+    vds.environment = 'staging'
     vds.gen_gridded_data_request(gen_uri=True, config_file=example_config_area,
                                  start_date='2018-01-01', end_date=datetime(2019, 1, 1),
                                  nrequests=2)
     assert vds.async_requests == [
-        'https://maps.vandersat.com/api/v2/products/TEST-PRODUCT_V001_25000/gridded-data?'
+        'https://staging.vandersat.com/api/v2/products/TEST-PRODUCT_V001_25000/gridded-data?'
         'lat_min=66&lat_max=67&lon_min=-6&lon_max=-5&'
         'start_date=2018-01-01&end_date=2018-07-01&format=gtiff&zipped=false',
-        'https://maps.vandersat.com/api/v2/products/TEST-PRODUCT_V001_25000/gridded-data?'
+        'https://staging.vandersat.com/api/v2/products/TEST-PRODUCT_V001_25000/gridded-data?'
         'lat_min=66&lat_max=67&lon_min=-6&lon_max=-5&'
         'start_date=2018-07-02&end_date=2019-01-01&format=gtiff&zipped=false'
     ]
@@ -78,18 +81,19 @@ def test_gen_uri_grid(credentials, example_config_area):
 
 def test_gen_uri_ts(credentials, example_config_ts):
     vds = VdsApiV2(credentials['user'], credentials['pw'])
+    vds.environment = 'staging'
     vds.gen_time_series_requests(gen_uri=True, config_file=example_config_ts, products=['TEST-PRODUCT_V001_25000'])
     assert vds.async_requests == [
-        'https://maps.vandersat.com/api/v2/products/TEST-PRODUCT_V001_25000/point-time-series?'
+        'https://staging.vandersat.com/api/v2/products/TEST-PRODUCT_V001_25000/point-time-series?'
         'start_time=2020-01-01&end_time=2020-01-03&lat=66.875&lon=-5.875&'
         'format=csv&avg_window_days=0&avg_window_direction=center&include_masked_data=false&climatology=false',
-        'https://maps.vandersat.com/api/v2/products/TEST-PRODUCT_V001_25000/point-time-series?'
+        'https://staging.vandersat.com/api/v2/products/TEST-PRODUCT_V001_25000/point-time-series?'
         'start_time=2020-01-01&end_time=2020-01-03&lat=66.125&lon=-5.125&'
         'format=csv&avg_window_days=0&avg_window_direction=center&include_masked_data=false&climatology=false',
-        'https://maps.vandersat.com/api/v2/products/TEST-PRODUCT_V001_25000/roi-time-series?'
+        'https://staging.vandersat.com/api/v2/products/TEST-PRODUCT_V001_25000/roi-time-series?'
         'start_time=2020-01-01&end_time=2020-01-03&roi_id=25009&format=csv&'
         'avg_window_days=0&avg_window_direction=center&include_masked_data=false&climatology=false',
-        'https://maps.vandersat.com/api/v2/products/TEST-PRODUCT_V001_25000/roi-time-series?'
+        'https://staging.vandersat.com/api/v2/products/TEST-PRODUCT_V001_25000/roi-time-series?'
         'start_time=2020-01-01&end_time=2020-01-03&roi_id=25010&format=csv&'
         'avg_window_days=0&avg_window_direction=center&include_masked_data=false&climatology=false'
     ]
@@ -101,6 +105,7 @@ def test_gen_uri_ts(credentials, example_config_ts):
 
 def test_getarea(credentials, example_config_area, tmpdir):
     vds = VdsApiV2(credentials['user'], credentials['pw'])
+    vds.environment = 'staging'
     vds.set_outfold(tmpdir)
     vds.gen_gridded_data_request(config_file=example_config_area, products=['TEST-PRODUCT_V001_25000'])
     vds.submit_async_requests(queue_files=False)
@@ -119,6 +124,7 @@ def test_getarea(credentials, example_config_area, tmpdir):
 
 def test_getts(credentials, example_config_ts, tmpdir):
     vds = VdsApiV2(credentials['user'], credentials['pw'])
+    vds.environment = 'staging'
     vds.outfold = tmpdir
     vds.gen_time_series_requests(gen_uri=True, config_file=example_config_ts, rois=[])
     vds.submit_async_requests(queue_files=False)
@@ -136,6 +142,7 @@ def test_getts(credentials, example_config_ts, tmpdir):
 
 def test_get_df(example_config_ts):
     vds = VdsApiV2()
+    vds.environment = 'staging'
     rois = getpar_fromtext(example_config_ts, 'rois')
     product = getpar_fromtext(example_config_ts, 'products')
     df = vds.get_roi_df(product, rois[0], '2020-01-01', '2020-01-03')
