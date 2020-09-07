@@ -1,5 +1,6 @@
 import re
 from math import ceil
+from vds_api_client.requester import Requester
 
 
 class Products(object):

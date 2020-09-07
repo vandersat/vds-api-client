@@ -139,7 +139,7 @@ def test(ctx):
         vds.host = host
         start = time.time()
         click.echo(vds)
-        bv = vds._get_content('http://{}status/'.format(vds.host))['backend_version']
+        bv = vds.get('http://{}status/'.format(vds.host))['backend_version']
         click.echo("backend version: {}".format(bv))
         vds.logger.info('API RESPONSE TIME: {:0.4f} seconds'.format(time.time() - start))
         click.echo()
@@ -158,7 +158,7 @@ def info(ctx, all_info, user_, product_list, roi):
         vds.host = ctx.obj['environment']
     if ctx.obj['impersonate']:
         vds.impersonate(ctx.obj['impersonate'])
-    bv = vds._get_content('http://{}status/'.format(vds.host))['backend_version']
+    bv = vds.get('http://{}status/'.format(vds.host))['backend_version']
     click.echo("backend version: {}".format(bv))
     if not (user_ or product_list or roi):
         all_info = True

@@ -9,17 +9,18 @@ def test_base_cli(runner):
 
 
 def test_cli_test(runner):
-    result = runner.invoke(api, ['test'])
+    result = runner.invoke(api, ['--environment', 'staging', 'test'])
     assert result.exit_code == 0
 
 
 def test_cli_info(runner):
-    result = runner.invoke(api, ['info'])
+    result = runner.invoke(api, ['--environment', 'staging', 'info'])
     assert result.exit_code == 0
 
 
 def test_cli_grid_base(runner, tmpdir):
-    result = runner.invoke(api, ['grid',
+    result = runner.invoke(api, ['--environment', 'staging',
+                                 'grid',
                                  '--product', 'TEST-PRODUCT_V001_25000',
                                  '--lon_range', '-5.5', '5.0',
                                  '--lat_range', '66.5', '67',
@@ -33,7 +34,8 @@ def test_cli_grid_base(runner, tmpdir):
 
 
 def test_cli_grid_nczip(runner, tmpdir):
-    result = runner.invoke(api, ['grid',
+    result = runner.invoke(api, ['--environment', 'staging',
+                                 'grid',
                                  '--product', 'TEST-PRODUCT_V001_25000',
                                  '--lon_range', '-5.5', '5.0',
                                  '--lat_range', '66.5', '67',
@@ -49,7 +51,8 @@ def test_cli_grid_nczip(runner, tmpdir):
 
 
 def test_cli_ts_base(runner, tmpdir):
-    result = runner.invoke(api, ['ts',
+    result = runner.invoke(api, ['--environment', 'staging',
+                                 'ts',
                                  '--product', 'TEST-PRODUCT_V001_25000',
                                  '--latlon', '66.875', '-5.875',
                                  '--latlon', '66.125', '-5.125',
@@ -63,7 +66,7 @@ def test_cli_ts_base(runner, tmpdir):
 
 
 def test_cli_v2_ts_allopts(runner, tmpdir):
-    result = runner.invoke(api, ['ts',
+    result = runner.invoke(api, ['--environment', 'staging', 'ts',
                                  '--product', 'TEST-PRODUCT_V001_25000',
                                  '--latlon', '66.875', '-5.875',
                                  '--date_range', '2020-01-01', '2020-01-03',

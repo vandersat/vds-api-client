@@ -99,7 +99,7 @@ class VdsApiV2(VdsApiBase):
         """
         Returns all previous requests
         """
-        rqsts = self._get_content('https://maps.vandersat.com/api/v2/api-requests/')['requests']
+        rqsts = self.get('https://maps.vandersat.com/api/v2/api-requests/')['requests']
         return None if not rqsts else rqsts
 
     def gen_gridded_data_request(self, gen_uri=True, config_file=None, products=None,
@@ -352,7 +352,7 @@ class VdsApiV2(VdsApiBase):
            stop_max_attempt_number=3, retry_on_exception=_http_error)
     def _submit_v2_req(self, call):
         self.logger.debug('Submitting async. request with uri=\n{}'.format(call))
-        r1_dict = self._get_content(call)
+        r1_dict = self.get(call)
         uuid = r1_dict['uuid']
         with open('{}.uuid'.format(uuid), 'w') as uuid_save:
             uuid_save.write('{}'.format(call) + '\n')
@@ -397,10 +397,10 @@ class VdsApiV2(VdsApiBase):
     def _uuid_status(self, uuid, wait_for_complete=True):
         status_url = 'https://' + self.host + 'api-requests/{}/status'.format(uuid)
         self.logger.debug('Status request for UUID: {}'.format(uuid))
-        status_dict = self._get_content(status_url)
+        status_dict = self.get(status_url)
         while status_dict['percentage'] < 100 and wait_for_complete:
             time.sleep(self._wait_time)
-            status_dict = self._get_content(status_url)
+            status_dict = self.get(status_url)
             _ = sys.stderr.write('\t' * 20 + '\b\r')
             progress_bar(status_dict['percentage'] / 100.0)
         self.logger.info('Ready for download UUID: {}'.format(uuid))
@@ -454,7 +454,7 @@ class VdsApiV2(VdsApiBase):
                                                          date=date,
                                                          lat=lat,
                                                          lon=lon)
-        return self._get_content(uri)['value']
+        return self.get(uri)['value']
 
     def get_roi_df(self, product, roi, start_date, end_date):
         """
@@ -483,8 +483,8 @@ class VdsApiV2(VdsApiBase):
                'avg_window_direction=backward&avg_window_days=20&format=csv'
                .format(product=product, roi=roi, start_time=start_date, end_time=end_date))
         r = requests.get(uri, verify=True, stream=True,
-                         auth=(self._credentials['user'], self._credentials['passwd']),
-                         headers=self._headers)
+                         auth=self.auth,
+                         headers=self.headers)
         r.raise_for_status()
         csv = BytesIO()
         for chunk in r.iter_content(2048):
