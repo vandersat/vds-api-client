@@ -193,7 +193,7 @@ class Rois(object):
         return [roi.id for roi in self._rois]
 
 
-class Roi(Requester):
+class Roi(object):
     """
     Roi object
 
