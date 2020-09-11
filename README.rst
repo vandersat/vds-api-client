@@ -280,7 +280,7 @@ Request raster data using the `products/<api_name>/gridded-data` endpoint
 
 **Time-series example [asynchronous]**
 
-Request time-series data using the `products/<api_name>/[point|roi]-time-series` endpoints
+Request time-series data using the `products/<api_name>/[point|roi]-time-series` endpoints.
 
 .. code-block:: python
 
@@ -297,6 +297,16 @@ Request time-series data using the `products/<api_name>/[point|roi]-time-series`
     # Get information on the downloaded files
     vds.summary()
 
+
+Notice that the lons and
+lats are given in a list. When multiple points are defined, the latitude and longitude pairs can be added to the
+single lists like this:
+
+.. code-block:: python
+
+    lons=[6.5, 7.5], lats=[41.5, 45]
+
+and they will be processed in parallel.
 
 **Re-download previous requests**
 
