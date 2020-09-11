@@ -13,3 +13,4 @@ dependencies:
   - future
   - retrying
   - click_datetime
+  - pygments
