@@ -116,7 +116,7 @@ class Requester(object):
 
     def delete(self, uri, **kwargs):
         r = requests.delete(uri, verify=True,
-                            auth=self.auth['user'],
+                            auth=self.auth,
                             headers=vac.HEADERS,
                             **kwargs)
         r.raise_for_status()
