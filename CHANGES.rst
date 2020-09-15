@@ -2,15 +2,22 @@
 Changelog
 =========
 
-Scheduled for next release
-==========================
 
-- Extend existing time-series synchronously using the get_val method
+Version 2.0.4
+=============
+- Add --backward to cli
+
+
+Version 2.0.3
+=============
+- Bugfix: Delete method supplied with incorrect authentication
+
 
 Version 2.0.2
 =============
 - Re-introduce tests for CI
-
+- Explicit documentation for parallel point time-series
+- Refactor for Requester object shared accross modules
 
 Version 2.0.1
 =============
