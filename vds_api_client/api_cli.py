@@ -244,13 +244,15 @@ def grid(ctx, config_file, products, lon_range, lat_range, date_range,
 @click.option('--format', '-f', 'fmt', type=click.Choice(['csv', 'json']), default='csv', show_default=True)
 @click.option('--masked', is_flag=True, help='Include masked data in output')
 @click.option('--av_win', type=int, help='Add averaging +/- days window column to output')
+@click.option('--backward/--center', is_flag=True, default=False, show_default='center',
+              help='Direction for moving average')
 @click.option('--clim', is_flag=True, help='Include climatology column in output')
 @click.option('-t', type=int, help='Rootzone soil moisture parameter (days) (not for streaming)')
 @click.option('--outfold', '-o', help='Path to output the data (created if no-existent)')
 @click.option('--verbose/--no-verbose', '-v', default=False, help='Set debug statements on')
 @click.pass_context
 def ts(ctx, config_file, products, latlons, rois, date_range, fmt,
-       masked, av_win, clim, t, outfold, verbose):
+       masked, av_win, backward, clim, t, outfold, verbose):
 
     vds = VdsApiV2(ctx.obj['user'], ctx.obj['passwd'], debug=False)
     if ctx.obj['environment'] is not None:
@@ -269,11 +271,12 @@ def ts(ctx, config_file, products, latlons, rois, date_range, fmt,
     download_if_unfinished(vds, 4)
     lats, lons = map(list, zip(*latlons)) if latlons else (None, None)
     rois = list(rois) if rois else None
+    av_win_dir = 'backward' if backward else 'center'
     vds.gen_time_series_requests(gen_uri=False, config_file=config_file, products=products,
                                  start_time=date_range[0] if date_range else None,
                                  end_time=date_range[1] if date_range else None,
                                  lats=lats, lons=lons, rois=rois,
-                                 av_win=av_win, masked=masked, clim=clim, t=t,
+                                 av_win=av_win, av_win_dir=av_win_dir, masked=masked, clim=clim, t=t,
                                  file_format=fmt)
     vds.log_config()
     vds.submit_async_requests()

@@ -182,6 +182,7 @@ Optional options:
 -f, --format       [``csv|json``] // File format to download, defaults to csv
 --masked           Switch to also download flagged data
 --av_win           ``int`` // Add averaging +/- days window column to output (supply full window)
+--backward         Backward moving average, defaults to --center if --av_win xx is used
 --clim             Switch to include climatology column in output
 -t                 ``int`` // Rootzone soil moisture parameter (days) (not used with streaming)
 -v, --verbose      Switch to increase the output messages
@@ -211,7 +212,7 @@ Get L-band time-series for a region-of-interest (roi) and a lat-lon pair
 
 Get time-series with all additional columns
 
-    ``$ vds-api ts -p SM-SMAP-LN-DESC_V003_100 -dr 2015-04-01 2019-01-01 -ll 52 4.5 -o tsfold --masked --av_win 35 --clim -t 20 -v``
+    ``$ vds-api ts -p SM-SMAP-LN-DESC_V003_100 -dr 2015-04-01 2019-01-01 -ll 52 4.5 -o tsfold --masked --av_win 35 --backward --clim -t 20 -v``
 
 
 Example usage Python API
