@@ -19,4 +19,5 @@ except VersionConflict:
 
 
 if __name__ == "__main__":
-    setup(use_pyscaffold=True)
+    # pyscaffold version required to get cli working again
+    setup(use_pyscaffold=True, setup_requires=['pyscaffold>=2.5a0,<2.6a0'])
