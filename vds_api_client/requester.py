@@ -110,13 +110,21 @@ class Requester(object):
         r = self.get(uri, **kwargs)
         return json.loads(r.content)
 
-    def post(self, uri, **kwargs):
-        r = requests.post(uri, verify=True, stream=True,
+    def post(self, uri, payload, **kwargs):
+        r = requests.post(uri, json=payload, verify=True,
                           auth=self.auth,
                           headers=vac.HEADERS,
                           **kwargs)
         r.raise_for_status()
-        return json.loads(r.content)
+        return r
+
+    def put(self, uri, payload, **kwargs):
+        r = requests.put(uri, json=payload, verify=True,
+                         auth=self.auth,
+                         headers=vac.HEADERS,
+                         **kwargs)
+        r.raise_for_status()
+        return r
 
     def delete(self, uri, **kwargs):
         r = requests.delete(uri, verify=True,
@@ -124,5 +132,6 @@ class Requester(object):
                             headers=vac.HEADERS,
                             **kwargs)
         r.raise_for_status()
+        return r
 
 # EOF
