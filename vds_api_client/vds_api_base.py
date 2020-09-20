@@ -77,31 +77,31 @@ def getpar_fromtext(textfile, parameter):
         elif par.lower() in ['true', 'false', 'yes', 'no']:
             return par.lower() in ['true', 'yes']
     else:
-        raise RuntimeError('textfile {} does not exist'.format(textfile))
+        raise RuntimeError(f'textfile {textfile} does not exist')
     return par
 
 
 def api_get(uri, expected_fn='', out_path='', overwrite=False, str_lvl=20, auth=None, headers=None):
     logger = setup_logging(streamlevel=str_lvl)
     if not overwrite and os.path.exists(expected_fn):
-        logger.debug('File {} exists, skipping download'.format(expected_fn))
+        logger.debug(f'File {expected_fn} exists, skipping download')
         return -1, expected_fn
-    logger.debug('Starting request for file {}'.format(os.path.basename(expected_fn)))
+    logger.debug(f'Starting request for file {os.path.basename(expected_fn)}')
     r = requests.get(uri, verify=True, stream=True,
                      auth=auth,
                      headers=headers)
     if r.status_code == 200:
         ofname = os.path.join(out_path, r.headers['Content-Disposition'].split('=')[1])
         if os.path.basename(ofname) == 'transparent.png':
-            logger.debug('No data available for file {}, skipping download'.format(expected_fn))
+            logger.debug(f'No data available for file {expected_fn}, skipping download')
             return -2, expected_fn
-        logger.info('Writing file: {}'.format(ofname))
+        logger.info(f'Writing file: {ofname}')
         with open(ofname, 'wb') as f:
             for chunk in r.iter_content(1024):
                 f.write(chunk)
         return ofname.encode('ascii')
     else:
-        logger.warning('Request status = {} - Error in retrieving data from url: {}'.format(r.status_code, uri))
+        logger.warning(f'Request status = {r.status_code} - Error in retrieving data from url: {uri}')
     return r, uri
 
 
@@ -128,7 +128,7 @@ def mkdirs(path, filepath=None):
         os.makedirs(basepath)
     except OSError:
         if not os.path.isdir(basepath):
-            raise OSError('Path ''{}'' does not exist and was not created'.format(path))
+            raise OSError(f"Path '{path}' does not exist and was not created")
 
 
 def configure(config, defaults, config_file, logger):
@@ -142,10 +142,10 @@ def configure(config, defaults, config_file, logger):
                     pass
             if config[key] is None:
                 if key in defaults:
-                    logger.debug('Setting default for {}: {}'.format(key, defaults[key]))
+                    logger.debug(f'Setting default for {key}: {defaults[key]}')
                     config[key] = defaults[key]
                 else:
-                    logger.warning("Value for key='{}' not set ".format(key))
+                    logger.warning(f"Value for key='{key}' not set ")
     return config
 
 
@@ -199,10 +199,10 @@ class VdsApiBase(Requester):
         self.usr_dict = self.get_user_info()
 
     def __str__(self):
-        show = '{} @ {}'.format(self.auth[0], self.host)
+        show = f'{self.auth[0]} @ {self.host}'
         if 'X-VDS-UserId' in self.headers:
-            show = ('{} --impersonated by-- '.format(self.headers['X-VDS-UserId']) +
-                    show + '\n\ttrigger .forget() to remove impersonation')
+            show = (f'{self.headers["X-VDS-UserId"]} --impersonated by-- {show}'
+                    f'\n\ttrigger .forget() to remove impersonation')
         return show
 
     def __repr__(self):
@@ -218,9 +218,9 @@ class VdsApiBase(Requester):
     @outfold.setter
     def outfold(self, out_path=''):
         if not os.path.exists(out_path):
-            self.logger.info('Created new folder @ {}'.format(out_path))
+            self.logger.info(f'Created new folder @ {out_path}')
             mkdirs(out_path)
-        self.logger.debug('Outfold set to {}'.format(out_path))
+        self.logger.debug(f'Outfold set to {out_path}')
         self._out_path = out_path
         self.logger = setup_logging(self.logger.handlers[0].level,
                                     self.logger.handlers[1].level)
@@ -273,9 +273,9 @@ class VdsApiBase(Requester):
         """
         for key, value in self.config.items():
             if log_level == 'DEBUG':
-                self.logger.debug('CONFIG PARAMETER: {} = {}'.format(key, value))
+                self.logger.debug(f'CONFIG PARAMETER: {key} = {value}')
             elif log_level == 'INFO':
-                self.logger.info('CONFIG PARAMETER: {} = {}'.format(key, value))
+                self.logger.info(f'CONFIG PARAMETER: {key} = {value}')
 
     def get_user_info(self):
         usr_dict = self.get('https://maps.vandersat.com/api/v2/users/me')
@@ -317,9 +317,9 @@ class VdsApiBase(Requester):
 
         if not_available:
             for prod in not_available:
-                self.logger.error('product `{}` not in available products'.format(prod))
-            self.logger.info('Choose from {}'.format([p.api_name for p in self.products]))
-            raise RuntimeError('Products `{}` not in your product-list'.format(not_available))
+                self.logger.error(f'product `{prod}` not in available products')
+            self.logger.info(f'Choose from {[p.api_name for p in self.products]}')
+            raise RuntimeError(f'Products `{not_available}` not in your product-list')
 
         return out_products
 
@@ -350,9 +350,9 @@ class VdsApiBase(Requester):
 
         if not_available:
             for prod in not_available:
-                self.logger.error('roi `{}` not in available rois'.format(prod))
-            self.logger.info('Choose from :{}'.format(str(self.rois)))
-            raise RuntimeError('Rois `{}` not found in account'.format(not_available))
+                self.logger.error(f'roi `{prod}` not in available rois')
+            self.logger.info(f'Choose from : {self.rois}')
+            raise RuntimeError(f'Rois `{not_available}` not found in account')
 
         return out_rois
 
@@ -372,18 +372,18 @@ class VdsApiBase(Requester):
             else:
                 rois = rois.ids_to_list()
         for roi in rois:
-            uri = "https://maps.vandersat.com/api/v2/rois/{}".format(roi)
+            uri = f"https://{self.host}/api/v2/rois/{roi}"
             self.delete(uri)
         self.rois = self.get_rois()
         self.logger.info('Deletion successful')
 
     def gen_uri(self, **kwargs):
-        self.logger.warning('gen_uri implemented only for VdsApiV2')
+        self.logger.error('invoke `gen_uri` on VdsApiV2')
         pass
 
     def _extract_fn(self, uri, out_path=None):
         if uri:
-            self.logger.warning('_extract_fn should not be used in the VdsApiBase class')
+            self.logger.error('_extract_fn should not be used in the VdsApiBase class')
         fn = '_.txt'
         fp = os.path.join(self._out_path if out_path is None else out_path, fn)
         return fp
@@ -439,10 +439,10 @@ class VdsApiBase(Requester):
     def retry(self):
         if self._retry:
             i = 0
-            self.logger.info('Starting retries 1 by 1 ({} to go)'.format(len(self._retry)))
+            self.logger.info(f'Starting retries 1 by 1 ({len(self._retry)} to go)')
             for uri in self._retry:
                 i += 1
-                self.logger.debug('{} / {} - retry for url =\n{}'.format(i, len(self._retry), uri))
+                self.logger.debug(f'{i} / {len(self._retry)} - retry for url =\n{uri}')
                 self.api_get(uri)
         if not self._failed:
             self.logger.info('All downloads successfull')
@@ -451,7 +451,7 @@ class VdsApiBase(Requester):
         n = len(self._api_calls)
         if n < n_proc:
             n_proc = max(n, 1)
-            self.logger.debug('Fewer calls than processes used, reducing n_procs to {}'.format(n_proc))
+            self.logger.debug(f'Fewer calls than processes used, reducing n_procs to {n_proc}')
         processed = Parallel(n_jobs=n_proc)(delayed(api_get)(call,
                                                              expected_fn=self._extract_fn(call),
                                                              out_path=self._out_path,
@@ -465,20 +465,16 @@ class VdsApiBase(Requester):
         self._api_calls = []
 
     def summary(self):
-        self.logger.info('==== VanderSat Application Programming Interface Summary ====')
-        self.logger.info('Succesfully downloaded:    {:>4} files'.format(len(self._outputs)))
-        self.logger.info('Skipped (exists):          {:>4} files'.format(len(self._skipped)))
-        self.logger.info('Skipped (no-data):         {:>4} files'.format(len(self._ndskipped)))
-        self.logger.info('Retried:                   {:>4} calls'.format(len(self._retry)))
-        self.logger.info('Not reached by intterrupt: {:>4} calls'.format(self._notreached))
-        self.logger.info('Failed:                    {:>4} calls'.format(len(self._failed)))
+        self.logger.info(f'==== VanderSat Application Programming Interface Summary ====')
+        self.logger.info(f'Succesfully downloaded:    {len(self._outputs):>4} files')
+        self.logger.info(f'Skipped (exists):          {len(self._skipped):>4} files')
+        self.logger.info(f'Skipped (no-data):         {len(self._ndskipped):>4} files')
+        self.logger.info(f'Retried:                   {len(self._retry):>4} calls')
+        self.logger.info(f'Not reached by intterrupt: {self._notreached:>4} calls')
+        self.logger.info(f'Failed:                    {len(self._failed):>4} calls')
         self.logger.info('                       ================')
-        self.logger.info('Total                      {:>4} calls'.format(len(self._outputs) +
-                                                                         len(self._skipped) +
-                                                                         len(self._ndskipped) +
-                                                                         len(self._retry) +
-                                                                         self._notreached +
-                                                                         len(self._failed)
-                                                                         ))
+        self.logger.info('Total                      {:>4} calls'.format(
+            len(self._outputs) + len(self._skipped) + len(self._ndskipped)
+            + len(self._retry) + self._notreached + len(self._failed)))
 
 # EOF

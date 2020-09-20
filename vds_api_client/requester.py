@@ -36,7 +36,7 @@ class Requester(object):
     @property
     def host(self):
         """Get the host with the set environment"""
-        return f'{vac.ENVIRONMENT}.vandersat.com/api/v2/'
+        return f'{vac.ENVIRONMENT}.vandersat.com'
 
     @host.setter
     def host(self, host):
@@ -54,9 +54,9 @@ class Requester(object):
             vac.ENVIRONMENT = host
         else:
             self.logger.critical("Environment unknown, choose from {'maps', 'staging', 'test'}")
-            raise ValueError('Unexpected server name received: {}'.format(host))
+            raise ValueError(f'Unexpected server name received: {host}')
         self._load_user_info()
-        self.logger.debug('Using server address: {}'.format(self.host))
+        self.logger.debug(f'Using server address: {self.host}')
 
     @property
     def environment(self):
@@ -68,9 +68,9 @@ class Requester(object):
             vac.ENVIRONMENT = environment
         else:
             self.logger.critical("Environment unknown, choose from {'maps', 'staging', 'test'}")
-            raise ValueError('Unexpected environment name received: {}'.format(environment))
+            raise ValueError(f'Unexpected environment name received: {environment}')
         self._load_user_info()
-        self.logger.debug('Using server address: {}'.format(self.host))
+        self.logger.debug(f'Using host: {self.host}')
 
     @property
     def logger(self):
