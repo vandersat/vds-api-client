@@ -6,6 +6,8 @@ import os
 import time
 from vds_api_client.vds_api_base import VdsApiBase, getpar_fromtext
 from vds_api_client.api_v2 import VdsApiV2
+
+from requests import HTTPError
 setattr(VdsApiV2, '__str__', VdsApiBase.__str__)
 
 vds_user = os.environ.get('VDS_USER', None)
@@ -135,13 +137,17 @@ def test(ctx):
     vds = VdsApiBase(ctx.obj['user'], ctx.obj['passwd'], debug=False)
     if ctx.obj['impersonate']:
         vds.impersonate(ctx.obj['impersonate'])
-    for host in ['maps', 'staging', 'test']:
-        vds.host = host
-        start = time.time()
-        click.echo(vds)
-        bv = vds.get('http://{}status/'.format(vds.host))['backend_version']
-        click.echo("backend version: {}".format(bv))
-        vds.logger.info('API RESPONSE TIME: {:0.4f} seconds'.format(time.time() - start))
+    for environment in ['maps', 'staging', 'test']:
+        try:
+            vds.environment = environment
+            click.echo(vds)
+            start = time.time()
+            status_uri = f'http://{vds.host}/api/v2/status/'
+            bv = vds.get_content(status_uri)['backend_version']
+            click.echo(f"backend version: {bv}")
+            vds.logger.info(f'API RESPONSE TIME: {time.time() - start:0.4f} seconds')
+        except HTTPError:
+            vds.logger.info(f'Not authorized for environment: {environment}')
         click.echo()
     vds.logger.info(' ================== Finished ==================')
 
