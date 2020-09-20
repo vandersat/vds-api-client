@@ -3,9 +3,16 @@ Changelog
 =========
 
 
+Version 2.1.0
+=============
+- Roi options expanded in python api
+
+-----
+
 Version 2.0.4
 =============
 - Add --backward to cli
+- fix CLI
 
 
 Version 2.0.3
@@ -23,8 +30,6 @@ Version 2.0.1
 =============
 - Add option backward average on time-series
 - Set debug level in init as integer between 0-50
-
-----
 
 Version 2.0.0
 =============
