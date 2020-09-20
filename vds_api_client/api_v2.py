@@ -7,6 +7,7 @@ from math import floor
 from collections import OrderedDict
 import re
 from glob import glob
+import json
 from datetime import datetime, timedelta
 from io import BytesIO
 
@@ -33,7 +34,7 @@ def progress_bar(n, nchar=25):
     """
     nhash = int(floor(n / (1.0/nchar)))
     pbar = '#'*nhash + ' '*(nchar - nhash)
-    _ = sys.stderr.write('[{}] {:0.1f} %\b\r'.format(pbar, n*100))
+    _ = sys.stderr.write(f'[{pbar}] {n*100:0.1f} %\b\r')
     # sys.stderr.flush()
 
 
@@ -63,32 +64,30 @@ class VdsApiV2(VdsApiBase):
     def __str__(self):
         basestr = super(VdsApiV2, self).__str__()
         if self.async_requests:
-            reqsts = '\n'.join('{i}\t{request}'.format(i=i, request=r)
-                               for i, r in enumerate(self.async_requests))
+            reqsts = '\n'.join(f'{i}\t{r}' for i, r in enumerate(self.async_requests))
         else:
             reqsts = '\t<EMPTY>, use <.gen_gridded_data_request()> or <.gen_time_series_request()>'
         if self.uuids:
-            uuids = '\n'.join('{i}\t{uuid}'.format(i=i, uuid=u)
-                              for i, u in enumerate(self.uuids))
+            uuids = '\n'.join(f'{i}\t{uuid}' for i, uuid in enumerate(self.uuids))
         else:
             uuids = '\t<EMPTY>, submit a request to add uuid(s)'
         if self._remove_after_dowload:
-            uuids_queued = '\n'.join('{i}\t{uuid}'.format(i=i, uuid=u)
-                                     for i, u in enumerate(self._remove_after_dowload))
+            uuids_queued = '\n'.join(f'{i}\t{uuid}' for i, uuid in enumerate(self._remove_after_dowload))
         else:
             uuids_queued = '\t<EMPTY>, generate uuids and trigger .queue_uuids_files()'
 
         v2str_1 = ('REQUESTS to be submitted <.submit_async_requests()>: [\n'
-                   '{}'
+                   f'{reqsts}'
                    '\n ]  ==> .async_requests\n'
-                   '\n').format(reqsts)
+                   '\n')
         v2str_2 = ('UUIDS to queue for download <.queue_uuids_files()> : [\n'
-                   '{}'
+                   f'{uuids}'
                    '\n ]  ==> .uuids\n'
-                   '\n').format(uuids)
+                   '\n')
         v2str_3 = ('ready for DOWNLOAD <.download_async_files()> : [\n'
-                   '{}\n ]\n'
-                   ''.format(uuids_queued))
+                   f'{uuids_queued}'
+                   '\n ]'
+                   '\n')
         v2str = ('\n\n'
                  + v2str_1
                  + v2str_2
@@ -99,7 +98,7 @@ class VdsApiV2(VdsApiBase):
         """
         Returns all previous requests
         """
-        rqsts = self.get('https://maps.vandersat.com/api/v2/api-requests/')['requests']
+        rqsts = self.get_content(f'https://{self.host}/api/v2/api-requests/')['requests']
         return None if not rqsts else rqsts
 
     def gen_gridded_data_request(self, gen_uri=True, config_file=None, products=None,
@@ -294,42 +293,32 @@ class VdsApiV2(VdsApiBase):
                     self.logger.info('Only 1 request made, it is not too large anyways right?')
             for prod in products:
                 for start, stop in splits:
-                    uri = ('https://{host}products/{prod}/gridded-data?'
-                           'lat_min={lami}&lat_max={lama}&lon_min={lomi}&lon_max={loma}&'
-                           'start_date={start}&end_date={end}&format={fmt}&zipped={zip}'
-                           .format(host=self.host, prod=prod,
-                                   lami=self._config['lat_min'], lama=self._config['lat_max'],
-                                   lomi=self._config['lon_min'], loma=self._config['lon_max'],
-                                   start=start.strftime('%Y-%m-%d'), end=stop.strftime('%Y-%m-%d'),
-                                   fmt=self._config['file_format'],
-                                   zip='true' if self._config['zipped'] else 'false'))
+                    uri = (f'https://{self.host}/api/v2/products/{prod}/gridded-data?'
+                           f'lat_min={self._config["lat_min"]}&lat_max={self._config["lat_max"]}'
+                           f'&lon_min={self._config["lon_min"]}&lon_max={self._config["lon_max"]}'
+                           f'&start_date={start:%Y-%m-%d}&end_date={stop:%Y-%m-%d}'
+                           f'&format={self._config["file_format"]}&zipped={json.dumps(self._config["zipped"])}')
                     self.async_requests.append(uri)
-                    self.logger.debug('Generated URI for {prod} between '
-                                      '{start} and {end}: {uri}'.format(prod=prod, start=start, end=stop,
-                                                                        uri=uri))
+                    self.logger.debug(f'Generated URI for {prod} between {start} and {stop}: {uri}')
 
         elif self._config['api_call'] == 'time-series':
-            locs = {'point-time-series': ['lat={}&lon={}'.format(lat, lon)
+            locs = {'point-time-series': [f'lat={lat}&lon={lon}'
                                           for lat, lon in zip(self._config['lats'], self._config['lons'])],
-                    'roi-time-series': ['roi_id={}'.format(self.rois[roi]) for roi in self._config['rois']]}
+                    'roi-time-series': [f'roi_id={self.rois[roi]}' for roi in self._config['rois']]}
             for prod in products:
                 for endpnt, loc_list in locs.items():
                     for loc in loc_list:
-                        uri = ('https://{host}products/{prod}/{endpoint}?'
-                               'start_time={start}&end_time={end}&{loc}&format={fmt}'
-                               '&avg_window_days={av_win}&avg_window_direction={av_win_dir}'
-                               '&include_masked_data={masked}&climatology={clim}'
-                               .format(host=self.host, prod=prod, endpoint=endpnt,
-                                       start=self._config['start_time'], end=self._config['end_time'],
-                                       loc=loc, fmt=self._config['file_format'],
-                                       av_win=self._config['av_win'],  # default 0
-                                       av_win_dir=self._config['av_win_dir'],
-                                       masked='true' if self._config['masked'] else 'false',
-                                       clim='true' if self._config['clim'] else 'false'))
+                        uri = (f'https://{self.host}/api/v2/products/{prod}/{endpnt}?'
+                               f'start_time={self._config["start_time"]}'
+                               f'&end_time={self._config["end_time"]}'
+                               f'&{loc}&format={self._config["file_format"]}'
+                               f'&avg_window_days={self._config["av_win"]}&avg_window_direction={self._config["av_win_dir"]}'
+                               f'&include_masked_data={json.dumps(self._config["masked"])}'
+                               f'&climatology={json.dumps(self._config["clim"])}')
                         if self._config['t'] is not None:
-                            uri += '&exp_filter_t={:d}'.format(self._config['t'])
+                            uri += f'&exp_filter_t={self._config["t"]:d}'
                         self.async_requests.append(uri)
-                        self.logger.debug('Generated URI: {}'.format(uri))
+                        self.logger.debug(f'Generated URI: {uri}')
 
         else:
             self.logger.error("Only 'gridded-data' and [point/roi]-time-series supported for now")
@@ -351,13 +340,13 @@ class VdsApiV2(VdsApiBase):
     @retry(wait_exponential_multiplier=5000, wait_exponential_max=15000,
            stop_max_attempt_number=3, retry_on_exception=_http_error)
     def _submit_v2_req(self, call):
-        self.logger.debug('Submitting async. request with uri=\n{}'.format(call))
-        r1_dict = self.get(call)
+        self.logger.debug(f'Submitting async. request with uri=\n{call}')
+        r1_dict = self.get_content(call)
         uuid = r1_dict['uuid']
-        with open('{}.uuid'.format(uuid), 'w') as uuid_save:
-            uuid_save.write('{}'.format(call) + '\n')
+        with open(f'{uuid}.uuid', 'w') as uuid_save:
+            uuid_save.write(f'{call}' + '\n')
             uuid_save.flush()
-        self.logger.info('Received response uuid: {}'.format(uuid))
+        self.logger.info(f'Received response uuid: {uuid}')
         return uuid
 
     def submit_async_requests(self, n_jobs=1, queue_files=True):
@@ -395,15 +384,15 @@ class VdsApiV2(VdsApiBase):
     @retry(wait_exponential_multiplier=5000, wait_exponential_max=15000,
            stop_max_attempt_number=7, retry_on_exception=_no_type_error)
     def _uuid_status(self, uuid, wait_for_complete=True):
-        status_url = 'https://' + self.host + 'api-requests/{}/status'.format(uuid)
-        self.logger.debug('Status request for UUID: {}'.format(uuid))
-        status_dict = self.get(status_url)
+        status_url = f'https://{self.host}/api/v2/api-requests/{uuid}/status'
+        self.logger.debug(f'Status request for UUID: {uuid}')
+        status_dict = self.get_content(status_url)
         while status_dict['percentage'] < 100 and wait_for_complete:
             time.sleep(self._wait_time)
-            status_dict = self.get(status_url)
+            status_dict = self.get_content(status_url)
             _ = sys.stderr.write('\t' * 20 + '\b\r')
             progress_bar(status_dict['percentage'] / 100.0)
-        self.logger.info('Ready for download UUID: {}'.format(uuid))
+        self.logger.info(f'Ready for download UUID: {uuid}')
         return status_dict
 
     def queue_uuids_files(self, uuids=None):
@@ -415,8 +404,8 @@ class VdsApiV2(VdsApiBase):
         while uuids:
             uuid = self.uuids.pop(0)
             content = self._uuid_status(uuid)
-            uris = content['data']
-            self._api_calls += ['http://' + self.host + re.sub(r'^/api/v\d/', '', uri) + '/download' for uri in uris]
+            data = content['data']
+            self._api_calls += [f'https://{self.host}{fileloc}/download' for fileloc in data]
             self._remove_after_dowload.append(uuid)
 
     def download_async_files(self, uuids=None, n_proc=1):
@@ -448,13 +437,8 @@ class VdsApiV2(VdsApiBase):
         """
         self.check_valid_products(product)
         date = date if isinstance(date, str) else date.strftime('%Y-%m-%dT%H%M%S')
-        uri = ('http://{host}products/{product}/point-value?'
-               'lat={lat}&lon={lon}&date={date}').format(host=self.host,
-                                                         product=product,
-                                                         date=date,
-                                                         lat=lat,
-                                                         lon=lon)
-        return self.get(uri)['value']
+        uri = f'http://{self.host}/api/v2/products/{product}/point-value?lat={lat}&lon={lon}&date={date}'
+        return self.get_content(uri)['value']
 
     def get_roi_df(self, product, roi, start_date, end_date):
         """
@@ -478,14 +462,10 @@ class VdsApiV2(VdsApiBase):
 
         """
         roi = self.rois[roi]
-        uri = ('https://maps.vandersat.com/api/v2/products/{product}/roi-time-series-sync?'
-               'roi_id={roi}&start_time={start_time}&end_time={end_time}&climatology=true&'
-               'avg_window_direction=backward&avg_window_days=20&format=csv'
-               .format(product=product, roi=roi, start_time=start_date, end_time=end_date))
-        r = requests.get(uri, verify=True, stream=True,
-                         auth=self.auth,
-                         headers=self.headers)
-        r.raise_for_status()
+        uri = (f'https://{self.host}/api/v2/products/{product}/roi-time-series-sync?'
+               f'roi_id={roi}&start_time={start_date}&end_time={end_date}&climatology=true&'
+               f'avg_window_direction=backward&avg_window_days=20&format=csv')
+        r = self.get(uri)
         csv = BytesIO()
         for chunk in r.iter_content(2048):
             csv.write(chunk)

@@ -6,6 +6,8 @@ import os
 import time
 from vds_api_client.vds_api_base import VdsApiBase, getpar_fromtext
 from vds_api_client.api_v2 import VdsApiV2
+
+from requests import HTTPError
 setattr(VdsApiV2, '__str__', VdsApiBase.__str__)
 
 vds_user = os.environ.get('VDS_USER', None)
@@ -24,7 +26,7 @@ pass_show = '$VDS_PASS (Not set)' if vds_pass is None else '$VDS_PASS'
 
 
 def set_win_envar(key, value=''):
-    subprocess.check_output('setx {} "{}"'.format(key, value))
+    subprocess.check_output(f'setx {key} "{value}"')
 
 
 def set_linux_envar(key, value=''):
@@ -51,8 +53,7 @@ def set_linux_envar(key, value=''):
         if os.path.exists(fn):
             update_shell_file(fn, key, value)
 
-    click.echo('{} has been set in all the environment variable '
-               'files.'.format(key))
+    click.echo(f'{key} has been set in all the environment variable files.')
 
 
 def update_shell_file(full_path, key, value=''):
@@ -77,16 +78,15 @@ def update_shell_file(full_path, key, value=''):
         fc = content.read()
 
         if key in fc:
-            click.echo('{} is already set in {}: old '
-                       'environment value will be commented out.'
-                       .format(key[:-1], full_path))
-            os.system("sed -e '/{}/ s/^#*/#/' -i {}".format(key, full_path))
+            click.echo(f'{key[:-1]} is already set in {full_path}: old '
+                       'environment value will be commented out.')
+            os.system(f"sed -e '/{key}/ s/^#*/#/' -i {full_path}")
             content.close()
 
     with open(full_path, 'a') as f:
-        f.write("export {}'{}'\n".format(key, value))
+        f.write(f"export {key}'{value}'\n")
         f.close()
-        click.echo('{} has been set in {}.'.format(key[:-1], full_path))
+        click.echo(f'{key[:-1]} has been set in {full_path}.')
 
 
 def download_if_unfinished(api_instance, n_jobs=1):
@@ -135,13 +135,17 @@ def test(ctx):
     vds = VdsApiBase(ctx.obj['user'], ctx.obj['passwd'], debug=False)
     if ctx.obj['impersonate']:
         vds.impersonate(ctx.obj['impersonate'])
-    for host in ['maps', 'staging', 'test']:
-        vds.host = host
-        start = time.time()
-        click.echo(vds)
-        bv = vds.get('http://{}status/'.format(vds.host))['backend_version']
-        click.echo("backend version: {}".format(bv))
-        vds.logger.info('API RESPONSE TIME: {:0.4f} seconds'.format(time.time() - start))
+    for environment in ['maps', 'staging', 'test']:
+        try:
+            vds.environment = environment
+            click.echo(vds)
+            start = time.time()
+            status_uri = f'http://{vds.host}/api/v2/status/'
+            bv = vds.get_content(status_uri)['backend_version']
+            click.echo(f"backend version: {bv}")
+            vds.logger.info(f'API RESPONSE TIME: {time.time() - start:0.4f} seconds')
+        except HTTPError:
+            vds.logger.info(f'Not authorized for environment: {environment}')
         click.echo()
     vds.logger.info(' ================== Finished ==================')
 
@@ -158,8 +162,8 @@ def info(ctx, all_info, user_, product_list, roi):
         vds.host = ctx.obj['environment']
     if ctx.obj['impersonate']:
         vds.impersonate(ctx.obj['impersonate'])
-    bv = vds.get('http://{}status/'.format(vds.host))['backend_version']
-    click.echo("backend version: {}".format(bv))
+    bv = vds.get_content(f'http://{vds.host}/api/v2/status/')['backend_version']
+    click.echo(f"backend version: {bv}")
     if not (user_ or product_list or roi):
         all_info = True
 
@@ -167,16 +171,17 @@ def info(ctx, all_info, user_, product_list, roi):
         show = ['id', 'name', 'email', 'roles', 'login_count', 'last_login_at']
         x, y = zip(*vds.usr_dict['geojson_area_allowed']['coordinates'][0])
         click.echo('\n######################### USER #########################\n')
+        njump = 26  # Hosizontal outline position
         for key in show:
-            click.echo('{:>26s} | {} '.format(key, vds.usr_dict[key]))
-        click.echo('\n{:>26s} | {} {}'.format('Area extent LON', min(x), max(x)))
-        click.echo('{:>26s} | {} {}'.format('Area extent LAT', min(y), max(y)))
+            click.echo(f'{key:>{njump}s} | {vds.usr_dict[key]} ')
+        click.echo(f'\n{"Area extent LON":>{njump}s} | {min(x)} {max(x)}')
+        click.echo(f'{"Area extent LAT":>{njump}s} | {min(y)} {max(y)}')
 
     if product_list or all_info:
         head = '\n ## |             # API name #            |         # Name #        \n'
         click.echo('\n############################ PRODUCTS ############################' + head + '='*len(head))
         for i, p in enumerate(vds.products):
-            click.echo(' {:02d} | {:35s} | {} '.format(i, p.api_name, p.name))
+            click.echo(f' {i:02d} | {p.api_name:35s} | {p.name} ')
 
     if roi or all_info:
         click.echo('\n######################### ROIS #########################')

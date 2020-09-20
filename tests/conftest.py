@@ -3,6 +3,7 @@ import os
 from glob import glob
 import pytest
 from click.testing import CliRunner
+import vds_api_client
 
 
 @pytest.fixture
@@ -48,5 +49,10 @@ def clean_uuid_files():
     files_to_delete = glob('*.uuid')
     for filename in files_to_delete:
         os.remove(filename)
+
+
+@pytest.fixture(autouse=True)
+def set_environment_staging():
+    vds_api_client.ENVIRONMENT = 'staging'
 
 # EOF

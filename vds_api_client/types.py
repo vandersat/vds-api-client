@@ -59,7 +59,7 @@ class Products(object):
                      if (product.api_name.lower() == item.lower()
                          or product.name.lower() == item.lower())]
         if not found:
-            raise ValueError('Product {} not found'.format(item))
+            raise ValueError(f'Product {item} not found')
         return found[0]
 
 
@@ -85,9 +85,9 @@ class Product(object):
 
     def __str__(self):
         if self.api_name != self.name:
-            return '{}, ({}) [{}]'.format(self.api_name, self.name, self.unit)
+            return f'{self.api_name}, ({self.name}) [{self.unit}]'
         else:
-            return '{} [{}]'.format(self.api_name, self.unit)
+            return f'{self.api_name} [{self.unit}]'
 
     def __repr__(self):
         return str(self)
@@ -152,17 +152,14 @@ class Rois(object):
     def __str__(self):
         if self.__bool__():
             nlen = max(max([len(r.name) for r in self._rois]), 10)  # max product length display
-            prod_ls = [(' {:6d} | {:'+str(nlen)+'s} | {:.3e} ha | {}').format(roi.id,
-                                                                              roi.name,
-                                                                              roi.area / 10000,
-                                                                              roi.description)
+            prod_ls = [f' {roi.id:6d} | {roi.name:{nlen}s} | {roi.area:.3e} ha | {roi.description}'
                        for roi in self._rois]
             body = '\n'.join(prod_ls)
         else:
             nlen = 9
             body = '\tNO ROIS FOUND'
-        head = '\n # ID # | {}# Name #{} |   # Area #   |       # Description #     \n'.format(
-            ' ' * int(ceil((nlen - 8) / 2.0)), ' ' * int(ceil((nlen - 8) / 2.0)))
+        nwhit = int(ceil((nlen - 8) / 2))
+        head = f'\n # ID # | {"":{nwhit}s}# Name #{"":{nwhit}s} |   # Area #   |       # Description #     \n'
         head = head + '=' * len(head) + '\n'
         return head + body
 
@@ -186,7 +183,7 @@ class Rois(object):
                 except ValueError:
                     found = []
         if not found:
-            raise ValueError('ROI {} not found'.format(item))
+            raise ValueError(f'ROI {item} not found')
         return found[0]
 
     def ids_to_list(self):
@@ -212,7 +209,7 @@ class Roi(object):
         self.geometry = geometry
 
     def __str__(self):
-        return 'roi.id: {}, roi.name: {}\n'.format(self.id, self.name)
+        return f'roi.id: {self.id}, roi.name: {self.name}\n'
 
     def __repr__(self):
         return str(self)
