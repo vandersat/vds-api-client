@@ -278,7 +278,7 @@ class VdsApiBase(Requester):
                 self.logger.info(f'CONFIG PARAMETER: {key} = {value}')
 
     def get_user_info(self):
-        usr_dict = self.get('https://maps.vandersat.com/api/v2/users/me')
+        usr_dict = self.get_content(f'https://{self.host}/api/v2/users/me')
         return usr_dict
 
     def get_products(self):
@@ -290,8 +290,8 @@ class VdsApiBase(Requester):
         products: Products
             Collection of Product objects
         """
-        product_json = self.get('https://maps.vandersat.com/api/v2/products/')
-        products = Products(product_json['products'])
+        product_dict = self.get_content(f'https://{self.host}/api/v2/products/')
+        products = Products(product_dict['products'])
         return products
 
     def check_valid_products(self, products):
@@ -324,7 +324,7 @@ class VdsApiBase(Requester):
         return out_products
 
     def get_rois(self):
-        roi_list = self.get('https://maps.vandersat.com/api/v2/rois')['rois']
+        roi_list = self.get_content(f'https://{self.host}/api/v2/rois')['rois']
         return Rois(None if not roi_list else roi_list)
 
     def check_valid_rois(self, rois):

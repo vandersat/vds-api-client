@@ -104,6 +104,10 @@ class Requester(object):
                          headers=vac.HEADERS,
                          **kwargs)
         r.raise_for_status()
+        return r
+
+    def get_content(self, uri, **kwargs):
+        r = self.get(uri, **kwargs)
         return json.loads(r.content)
 
     def post(self, uri, **kwargs):

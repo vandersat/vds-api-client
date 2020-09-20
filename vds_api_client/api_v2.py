@@ -98,7 +98,7 @@ class VdsApiV2(VdsApiBase):
         """
         Returns all previous requests
         """
-        rqsts = self.get('https://maps.vandersat.com/api/v2/api-requests/')['requests']
+        rqsts = self.get_content(f'https://{self.host}/api/v2/api-requests/')['requests']
         return None if not rqsts else rqsts
 
     def gen_gridded_data_request(self, gen_uri=True, config_file=None, products=None,
@@ -340,8 +340,8 @@ class VdsApiV2(VdsApiBase):
     @retry(wait_exponential_multiplier=5000, wait_exponential_max=15000,
            stop_max_attempt_number=3, retry_on_exception=_http_error)
     def _submit_v2_req(self, call):
-        self.logger.debug('Submitting async. request with uri=\n{}'.format(call))
-        r1_dict = self.get(call)
+        self.logger.debug(f'Submitting async. request with uri=\n{call}')
+        r1_dict = self.get_content(call)
         uuid = r1_dict['uuid']
         with open(f'{uuid}.uuid', 'w') as uuid_save:
             uuid_save.write(f'{call}' + '\n')
@@ -384,12 +384,12 @@ class VdsApiV2(VdsApiBase):
     @retry(wait_exponential_multiplier=5000, wait_exponential_max=15000,
            stop_max_attempt_number=7, retry_on_exception=_no_type_error)
     def _uuid_status(self, uuid, wait_for_complete=True):
-        status_url = 'https://' + self.host + 'api-requests/{}/status'.format(uuid)
-        self.logger.debug('Status request for UUID: {}'.format(uuid))
-        status_dict = self.get(status_url)
+        status_url = f'https://{self.host}/api/v2/api-requests/{uuid}/status'
+        self.logger.debug(f'Status request for UUID: {uuid}')
+        status_dict = self.get_content(status_url)
         while status_dict['percentage'] < 100 and wait_for_complete:
             time.sleep(self._wait_time)
-            status_dict = self.get(status_url)
+            status_dict = self.get_content(status_url)
             _ = sys.stderr.write('\t' * 20 + '\b\r')
             progress_bar(status_dict['percentage'] / 100.0)
         self.logger.info(f'Ready for download UUID: {uuid}')
@@ -437,13 +437,8 @@ class VdsApiV2(VdsApiBase):
         """
         self.check_valid_products(product)
         date = date if isinstance(date, str) else date.strftime('%Y-%m-%dT%H%M%S')
-        uri = ('http://{host}products/{product}/point-value?'
-               'lat={lat}&lon={lon}&date={date}').format(host=self.host,
-                                                         product=product,
-                                                         date=date,
-                                                         lat=lat,
-                                                         lon=lon)
-        return self.get(uri)['value']
+        uri = f'http://{self.host}/api/v2/products/{product}/point-value?lat={lat}&lon={lon}&date={date}'
+        return self.get_content(uri)['value']
 
     def get_roi_df(self, product, roi, start_date, end_date):
         """
@@ -467,14 +462,10 @@ class VdsApiV2(VdsApiBase):
 
         """
         roi = self.rois[roi]
-        uri = ('https://maps.vandersat.com/api/v2/products/{product}/roi-time-series-sync?'
-               'roi_id={roi}&start_time={start_time}&end_time={end_time}&climatology=true&'
-               'avg_window_direction=backward&avg_window_days=20&format=csv'
-               .format(product=product, roi=roi, start_time=start_date, end_time=end_date))
-        r = requests.get(uri, verify=True, stream=True,
-                         auth=self.auth,
-                         headers=self.headers)
-        r.raise_for_status()
+        uri = (f'https://{self.host}/api/v2/products/{product}/roi-time-series-sync?'
+               f'roi_id={roi}&start_time={start_date}&end_time={end_date}&climatology=true&'
+               f'avg_window_direction=backward&avg_window_days=20&format=csv')
+        r = self.get(uri)
         csv = BytesIO()
         for chunk in r.iter_content(2048):
             csv.write(chunk)
