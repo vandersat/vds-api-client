@@ -118,6 +118,10 @@ class Requester(object):
         r.raise_for_status()
         return r
 
+    def post_content(self, uri, payload, **kwargs):
+        r = self.post(uri, payload, **kwargs)
+        return json.loads(r.content)
+
     def put(self, uri, payload, **kwargs):
         r = requests.put(uri, json=payload, verify=True,
                          auth=self.auth,
@@ -126,6 +130,10 @@ class Requester(object):
         r.raise_for_status()
         return r
 
+    def put_content(self, uri, payload, **kwargs):
+        r = self.put(uri, payload, **kwargs)
+        return json.loads(r.content)
+
     def delete(self, uri, **kwargs):
         r = requests.delete(uri, verify=True,
                             auth=self.auth,
@@ -133,5 +141,9 @@ class Requester(object):
                             **kwargs)
         r.raise_for_status()
         return r
+
+    def delete_content(self, uri, **kwargs):
+        r = self.delete(uri, **kwargs)
+        return json.loads(r.content)
 
 # EOF
