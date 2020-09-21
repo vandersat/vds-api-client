@@ -304,7 +304,7 @@ class VdsApiV2(VdsApiBase):
         elif self._config['api_call'] == 'time-series':
             locs = {'point-time-series': [f'lat={lat}&lon={lon}'
                                           for lat, lon in zip(self._config['lats'], self._config['lons'])],
-                    'roi-time-series': [f'roi_id={self.rois[roi]}' for roi in self._config['rois']]}
+                    'roi-time-series': [f'roi_id={self.rois[roi].id}' for roi in self._config['rois']]}
             for prod in products:
                 for endpnt, loc_list in locs.items():
                     for loc in loc_list:
@@ -449,7 +449,7 @@ class VdsApiV2(VdsApiBase):
         ----------
         product: str
             Product to extract dataframe from
-        roi: int or tr
+        roi: int or str
             Region of interest to retrieve DataFrame from
         start_date: str
             start date to retrieve data yyyy-mm-dd
@@ -458,12 +458,12 @@ class VdsApiV2(VdsApiBase):
 
         Returns
         -------
-        dfs_lis: list of pd.DataFrame
+        dfs_list: list of pd.DataFrame
 
         """
-        roi = self.rois[roi]
+        roi_id = self.rois[roi].id
         uri = (f'https://{self.host}/api/v2/products/{product}/roi-time-series-sync?'
-               f'roi_id={roi}&start_time={start_date}&end_time={end_date}&climatology=true&'
+               f'roi_id={roi_id}&start_time={start_date}&end_time={end_date}&climatology=true&'
                f'avg_window_direction=backward&avg_window_days=20&format=csv')
         r = self.get(uri)
         csv = BytesIO()

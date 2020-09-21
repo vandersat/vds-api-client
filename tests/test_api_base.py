@@ -54,9 +54,9 @@ def test_rois(credentials, example_config_ts):
     assert isinstance(vds.rois, Rois)
     assert all([isinstance(r, Roi) for r in vds.rois])
     roi_str, roi_name = getpar_fromtext(example_config_ts, 'rois')
-    assert vds.rois[roi_str] == int(roi_str)
-    assert vds.rois[int(roi_str)] == int(roi_str)
-    assert vds.rois[roi_name] > 0
+    assert vds.rois[roi_str].id == int(roi_str)
+    assert vds.rois[int(roi_str)].id == int(roi_str)
+    assert vds.rois[roi_name].name == roi_name
 
 
 def test_products(credentials, example_config_area):
