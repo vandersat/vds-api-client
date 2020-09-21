@@ -169,7 +169,10 @@ def info(ctx, all_info, user_, product_list, roi):
 
     if user_ or all_info:
         show = ['id', 'name', 'email', 'roles', 'login_count', 'last_login_at']
-        x, y = zip(*vds.usr_dict['geojson_area_allowed']['coordinates'][0])
+        if vds.usr_dict['geojson_area_allowed']['type'] == 'Polygon':
+            x, y = zip(*vds.usr_dict['geojson_area_allowed']['coordinates'][0])
+        elif vds.usr_dict['geojson_area_allowed']['type'] == 'MultiPolygon':
+            x, y = zip(*vds.usr_dict['geojson_area_allowed']['coordinates'][0])
         click.echo('\n######################### USER #########################\n')
         njump = 26  # Hosizontal outline position
         for key in show:
