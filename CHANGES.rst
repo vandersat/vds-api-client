@@ -5,7 +5,7 @@ Changelog
 
 Version 2.1.0
 =============
-- Roi options expanded in python api
+- Roi options expanded in python api: filter, update, hide-all, show-all
 - Use unambiguous date and time formats in logs
 
 

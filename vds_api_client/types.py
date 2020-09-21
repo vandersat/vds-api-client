@@ -227,7 +227,7 @@ class Rois(object):
         if self.__bool__():
             nlen = max(max([len(r.name) for r in self._rois]), 10)  # max product length display
             prod_ls = [(f' {roi.id:7d}  /  [{"X" if roi.display else " "}]  | {roi.name:{nlen}s} ' 
-                        f'| {roi.area:.3e} ha | {roi.created_at:%Y-%m-%d %H:%m} | {roi.description}')
+                        f'| {roi.area:.3e} ha | {roi.created_at:%Y-%m-%d %H:%M} | {roi.description}')
                        for roi in self._rois]
             body = '\n'.join(prod_ls)
         else:
@@ -351,7 +351,7 @@ class Roi(object):
             Set display state in the viewer
 
         """
-        headers = {"X-Fields": 'rois{name, description, display}'}
+        headers = {"X-Fields": 'name, description, display'}
         update_dict = {}
         if name is not None:
             update_dict['name'] = name
