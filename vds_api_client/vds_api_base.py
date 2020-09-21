@@ -21,7 +21,7 @@ def setup_logging(filelevel=10, streamlevel=20):
         fh = logging.FileHandler('vds_api.log')
         ch = logging.StreamHandler()
         formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)8s - %(funcName)s @ thr %(thread)05d' +
-                                      '  - %(message)s', datefmt='%Y/%m/%d %I:%M:%S')
+                                      '  - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
         fh.setFormatter(formatter)
         ch.setFormatter(formatter)
         fh.setLevel(filelevel)

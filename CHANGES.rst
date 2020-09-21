@@ -6,8 +6,8 @@ Changelog
 Version 2.1.0
 =============
 - Roi options expanded in python api
+- Use unambiguous date and time formats in logs
 
------
 
 Version 2.0.4
 =============
