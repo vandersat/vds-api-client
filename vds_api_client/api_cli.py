@@ -169,13 +169,17 @@ def info(ctx, all_info, user_, product_list, roi):
 
     if user_ or all_info:
         show = ['id', 'name', 'email', 'roles', 'login_count', 'last_login_at']
-        x, y = zip(*vds.usr_dict['geojson_area_allowed']['coordinates'][0])
+        if vds.usr_dict['geojson_area_allowed']['type'] == 'Polygon':
+            x, y = zip(*vds.usr_dict['geojson_area_allowed']['coordinates'][0])
+        else:
+            x, y = None, None
         click.echo('\n######################### USER #########################\n')
         njump = 26  # Hosizontal outline position
         for key in show:
             click.echo(f'{key:>{njump}s} | {vds.usr_dict[key]} ')
-        click.echo(f'\n{"Area extent LON":>{njump}s} | {min(x)} {max(x)}')
-        click.echo(f'{"Area extent LAT":>{njump}s} | {min(y)} {max(y)}')
+        if x is not None and y is not None:
+            click.echo(f'\n{"Area extent LON":>{njump}s} | {min(x)} {max(x)}')
+            click.echo(f'{"Area extent LAT":>{njump}s} | {min(y)} {max(y)}')
 
     if product_list or all_info:
         head = '\n ## |             # API name #            |         # Name #        \n'

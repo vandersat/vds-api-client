@@ -7,7 +7,7 @@ Version 2.1.0
 =============
 - Roi options expanded in python api: filter, update, hide-all, show-all
 - Use unambiguous date and time formats in logs
-
+- fix cli user info command
 
 Version 2.0.4
 =============

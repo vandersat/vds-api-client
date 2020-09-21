@@ -6,7 +6,10 @@ jobs:
 install:
   - pip install -r requirements.txt
   - pip install -r test-requirements.txt
+  - pip install coveralls
   - pip install .
 # command to run tests
 script:
   - python setup.py test
+after_success:
+  - coveralls
