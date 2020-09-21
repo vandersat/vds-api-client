@@ -6,7 +6,7 @@ Changelog
 Unreleased
 =============
 - Use unambiguous date and time formats in logs
-
+- fix cli user info command
 
 Version 2.0.4
 =============
