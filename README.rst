@@ -377,33 +377,71 @@ easier using the client methods that allow you to filter the rois.
     print(vds.rois)
 
 .. parsed-literal::
-     # ID # |       # Name #       |   # Area #   |       # Description #
-    ============================================================================
-       3249 | GH                   | 3.227e+04 ha | Groene hart cirkel
-       3970 | Luxemburg            | 2.593e+05 ha | Administrative Country Boundary
-       7046 | Ernange              | 7.244e+02 ha | Ernange area for Kisters / SPW
-       9211 | Delete This          | 4.128e+04 ha | Selection to Delete
-       9212 | Delete also this one | 7.387e+04 ha | Selection to Delete
+
+     # ID / DISPLAY # |  # Name #  |   # Area #   |  # Created at #  |       # Description #
+    ===============================================================================================
+       25009  /  [X]  | Center     | 1.063e+09 ha | 2020-08-16 12:49 | Center pixels
+       25010  /  [X]  | Right      | 9.949e+08 ha | 2020-08-16 12:58 | Right side pixels
+       25011  /  [X]  | Bottom     | 6.616e+08 ha | 2020-08-16 12:59 | Bottom side pixels
+       30596  /  [ ]  | NewName    | 9.140e+07 ha | 2020-09-18 07:19 | Same rectangle
+
+**Filters**
 
 But now, also filters can be applied to select Rois based on a criterium,
 and give the corresponding ids:
 
 .. code-block:: python
 
-    rois_filtered = vds.rois.filter(min_id=100,
-                                    area_min=200,
-                                    description_regex='Delete')
+    rois_filtered = vds.rois.filter(
+        min_id=25000, max_id=25020,
+        area_min=1e8, area_max=1e9,
+        name_regex='Right|Bottom', description_regex='pixels',
+        created_before=dt.datetime(2020, 8, 16, 13, 0),
+        created_after=dt.datetime(2020, 8, 16, 12, 57),
+        display=True)
     print(rois_filtered)
     print(rois_filtered.ids_to_list())
 
 .. parsed-literal::
 
-    # ID # |       # Name #       |   # Area #   |       # Description #
-    ============================================================================
-      9211 | Delete This          | 4.128e+04 ha | Selection to Delete
-      9212 | Delete also this one | 7.387e+04 ha | Selection to Delete
+     # ID / DISPLAY # |  # Name #  |   # Area #   |  # Created at #  |       # Description #
+    ===============================================================================================
+       25010  /  [X]  | Right      | 9.949e+08 ha | 2020-08-16 12:58 | Right side pixels
+       25011  /  [X]  | Bottom     | 6.616e+08 ha | 2020-08-16 12:59 | Bottom side pixels
 
     [9211, 9212]
+
+**Geometry**
+
+Accessing the geometry is now supported through the geojson property:
+
+.. code-block:: python
+
+    roi = vds.rois[25010]
+    geojson = roi.geojson  # Loads geometry from api
+    print(geojson)
+
+    {'type': 'MultiPolygon', 'coordinates': [[[[-5.237732, 66.044796], [-5.237732, 66.956952], [-5.018005, 66.956952], [-5.018005, 66.044796], [-5.237732, 66.044796]]]]}
+
+
+**Updating**
+
+Updating an Roi's metadata is supported through the roi.update method:
+
+.. code-block:: python
+
+    roi = vds.rois[30596]
+    roi.update(name='New name', description='New description', display=False)
+    print(vds.rois.filter(name_regex='New name'))
+
+.. parsed-literal::
+
+     # ID / DISPLAY # |  # Name #  |   # Area #   |  # Created at #  |       # Description #
+    ===============================================================================================
+       30596  /  [ ]  | New name   | 9.140e+07 ha | 2020-09-18 07:19 | New description
+
+
+**Deleting**
 
 Deleting ROIS from your account is supported through the `delete_rois_from_account()` method.
 It expects a list of integers, or a filtered Rois instance. Now we can delete our Rois
