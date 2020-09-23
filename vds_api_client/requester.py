@@ -99,30 +99,187 @@ class Requester(object):
         self._load_user_info()
 
     def get(self, uri, **kwargs):
+        """
+        Submit a get request using requests with authentication set.
+
+        Parameters
+        ----------
+        uri: str
+            Uniform Resource Identifier
+        kwargs:
+            parsed to requests.get
+
+        Returns
+        -------
+        requests.models.Response
+
+        """
+        headers = vac.HEADERS.copy()
+        headers.update(kwargs.pop('headers', {}))
         r = requests.get(uri, verify=True, stream=True,
                          auth=self.auth,
-                         headers=vac.HEADERS,
+                         headers=headers,
                          **kwargs)
         r.raise_for_status()
         return r
 
     def get_content(self, uri, **kwargs):
+        """
+        Same as self.get but directly load content json of the response
+
+        Parameters
+        ----------
+        uri: str
+            Uniform Resource Identifier
+        kwargs:
+            parsed to requests.get
+
+        Returns
+        -------
+        dict
+
+        """
         r = self.get(uri, **kwargs)
         return json.loads(r.content)
 
-    def post(self, uri, **kwargs):
-        r = requests.post(uri, verify=True, stream=True,
+    def post(self, uri, payload, **kwargs):
+        """
+        Submit a post request using requests with authentication set.
+
+        Parameters
+        ----------
+        uri: str
+            Uniform Resource Identifier
+        payload: dict
+            Data to post
+        kwargs:
+            parsed to requests.get
+
+        Returns
+        -------
+        requests.models.Response
+
+        """
+        headers = vac.HEADERS.copy()
+        headers.update(kwargs.pop('headers', {}))
+        r = requests.post(uri, json=payload, verify=True,
                           auth=self.auth,
-                          headers=vac.HEADERS,
+                          headers=headers,
                           **kwargs)
         r.raise_for_status()
+        return r
+
+    def post_content(self, uri, payload, **kwargs):
+        """
+        Same as self.post but directly load content json of the response
+
+        Parameters
+        ----------
+        uri: str
+            Uniform Resource Identifier
+        payload: dict
+            Data to post
+        kwargs:
+            parsed to requests.get
+
+        Returns
+        -------
+        dict
+
+        """
+        r = self.post(uri, payload, **kwargs)
+        return json.loads(r.content)
+
+    def put(self, uri, payload, **kwargs):
+        """
+        Submit a put request using requests with authentication set.
+
+        Parameters
+        ----------
+        uri: str
+            Uniform Resource Identifier
+        payload: dict
+            Data to update
+        kwargs:
+            parsed to requests.get
+
+        Returns
+        -------
+        requests.models.Response
+
+        """
+        headers = vac.HEADERS.copy()
+        headers.update(kwargs.pop('headers', {}))
+        r = requests.put(uri, json=payload, verify=True,
+                         auth=self.auth,
+                         headers=headers,
+                         **kwargs)
+        r.raise_for_status()
+        return r
+
+    def put_content(self, uri, payload, **kwargs):
+        """
+        Same as self.put but directly load content json of the response
+
+        Parameters
+        ----------
+        uri: str
+            Uniform Resource Identifier
+                payload: dict
+            Data to update
+        kwargs:
+            parsed to requests.get
+
+        Returns
+        -------
+        dict
+
+        """
+        r = self.put(uri, payload, **kwargs)
         return json.loads(r.content)
 
     def delete(self, uri, **kwargs):
+        """
+        Submit a delete request using requests with authentication set.
+
+        Parameters
+        ----------
+        uri: str
+            Uniform Resource Identifier
+        kwargs:
+            parsed to requests.get
+
+        Returns
+        -------
+        requests.models.Response
+
+        """
+        headers = vac.HEADERS.copy()
+        headers.update(kwargs.pop('headers', {}))
         r = requests.delete(uri, verify=True,
                             auth=self.auth,
-                            headers=vac.HEADERS,
+                            headers=headers,
                             **kwargs)
         r.raise_for_status()
+        return r
+
+    def delete_content(self, uri, **kwargs):
+        """
+        Same as self.delete but directly load content json of the response
+
+        Parameters
+        ----------
+        uri: str
+            Uniform Resource Identifier
+        kwargs:
+            parsed to requests.get
+
+        Returns
+        -------
+        dict
+
+        """
+        r = self.delete(uri, **kwargs)
+        return json.loads(r.content)
 
 # EOF

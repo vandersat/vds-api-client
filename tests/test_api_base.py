@@ -49,16 +49,6 @@ def test_outfold_setter(credentials, tmpdir):
     assert os.path.exists(new_dir)
 
 
-def test_rois(credentials, example_config_ts):
-    vds = VdsApiBase(credentials['user'], credentials['pw'])
-    assert isinstance(vds.rois, Rois)
-    assert all([isinstance(r, Roi) for r in vds.rois])
-    roi_str, roi_name = getpar_fromtext(example_config_ts, 'rois')
-    assert vds.rois[roi_str] == int(roi_str)
-    assert vds.rois[int(roi_str)] == int(roi_str)
-    assert vds.rois[roi_name] > 0
-
-
 def test_products(credentials, example_config_area):
     vds = VdsApiBase(credentials['user'], credentials['pw'])
     assert isinstance(vds.products, Products)

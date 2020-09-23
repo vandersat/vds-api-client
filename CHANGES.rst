@@ -3,14 +3,16 @@ Changelog
 =========
 
 
-Unreleased
+Version 2.1.0
 =============
+- Roi options expanded in python api: filter, update, hide-all, show-all
 - Use unambiguous date and time formats in logs
 - fix cli user info command
 
 Version 2.0.4
 =============
 - Add --backward to cli
+- fix CLI
 
 
 Version 2.0.3
@@ -28,8 +30,6 @@ Version 2.0.1
 =============
 - Add option backward average on time-series
 - Set debug level in init as integer between 0-50
-
-----
 
 Version 2.0.0
 =============

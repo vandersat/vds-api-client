@@ -324,7 +324,8 @@ class VdsApiBase(Requester):
         return out_products
 
     def get_rois(self):
-        roi_list = self.get_content(f'https://{self.host}/api/v2/rois')['rois']
+        headers = {"X-Fields": 'rois{id, name, description, created_at, area, labels, display}'}
+        roi_list = self.get_content(f'https://{self.host}/api/v2/rois', headers=headers)['rois']
         return Rois(None if not roi_list else roi_list)
 
     def check_valid_rois(self, rois):
@@ -337,14 +338,14 @@ class VdsApiBase(Requester):
         """
         if rois is None:
             rois = []
-        elif isinstance(rois, str):
+        elif isinstance(rois, str) or isinstance(rois, int):
             rois = [rois]
 
         out_rois = []
         not_available = []
         for roi in rois:
             try:
-                out_rois.append(self.rois[roi])
+                out_rois.append(self.rois[roi].id)
             except ValueError:
                 not_available.append(roi)
 
