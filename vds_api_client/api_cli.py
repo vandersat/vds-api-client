@@ -257,11 +257,13 @@ def grid(ctx, config_file, products, lon_range, lat_range, date_range,
               help='Direction for moving average')
 @click.option('--clim', is_flag=True, help='Include climatology column in output')
 @click.option('-t', type=int, help='Rootzone soil moisture parameter (days) (not for streaming)')
+@click.option('--provide-coverage/--no-provide-coverage', '-cov', is_flag=True, default=False, show_default=True,
+              help='Provide coverage column for ROI time-series')
 @click.option('--outfold', '-o', help='Path to output the data (created if no-existent)')
 @click.option('--verbose/--no-verbose', '-v', default=False, help='Set debug statements on')
 @click.pass_context
 def ts(ctx, config_file, products, latlons, rois, date_range, fmt,
-       masked, av_win, backward, clim, t, outfold, verbose):
+       masked, av_win, backward, clim, t, provide_coverage, outfold, verbose):
 
     vds = VdsApiV2(ctx.obj['user'], ctx.obj['passwd'], debug=False)
     if ctx.obj['environment'] is not None:
@@ -286,6 +288,7 @@ def ts(ctx, config_file, products, latlons, rois, date_range, fmt,
                                  end_time=date_range[1] if date_range else None,
                                  lats=lats, lons=lons, rois=rois,
                                  av_win=av_win, av_win_dir=av_win_dir, masked=masked, clim=clim, t=t,
+                                 provide_coverage=provide_coverage,
                                  file_format=fmt)
     vds.log_config()
     vds.submit_async_requests()

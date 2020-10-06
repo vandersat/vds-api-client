@@ -173,6 +173,7 @@ class VdsApiV2(VdsApiBase):
                                  lats=None, lons=None, rois=None,
                                  file_format=None,
                                  av_win=None, av_win_dir=None, masked=None, clim=None, t=None,
+                                 provide_coverage=None,
                                  log_config=False):
         """
         Generate one or more uris for the `[point/roi]-time-series` enpoints.
@@ -212,6 +213,8 @@ class VdsApiV2(VdsApiBase):
             Add climatology column calculated based on the average column
         t: int
             Calculate derived root zone as additional column with given smoothing `T` value (days)
+        provide_coverage: bool
+            Include coverage percentage in the output, roi-time-series only
         log_config: bool
             Write the used configuration to the logging file and steam
         """
@@ -230,9 +233,11 @@ class VdsApiV2(VdsApiBase):
                       start_time=start_time, end_time=end_time,
                       lats=lats, lons=lons, rois=rois, file_format=file_format,
                       av_win=av_win, av_win_dir=av_win_dir,
-                      masked=masked, clim=clim, t=t)
+                      masked=masked, clim=clim, t=t,
+                      provide_coverage=provide_coverage)
         defaults = dict(file_format='csv', av_win=0, masked=False,
                         clim=False, t=None, av_win_dir='center',
+                        provide_coverage=False,
                         lats=[], lons=[], rois=[])
         config = configure(config, defaults, config_file, self.logger)
         for key in ['lons', 'lats', 'rois', 'products']:
@@ -269,8 +274,10 @@ class VdsApiV2(VdsApiBase):
             to see the names of the settings that can be changed
         """
         if self._config is None:
-            self.logger.error('API was not configured. Choose one of the configure methods to setup the parameters')
-            return None
+            error_msg = ('API was not configured. '
+                         'Choose one of the configure methods to setup the parameters')
+            self.logger.error(error_msg)
+            raise RuntimeError(error_msg)
 
         if not add:
             self.async_requests = []
@@ -317,6 +324,8 @@ class VdsApiV2(VdsApiBase):
                                f'&climatology={json.dumps(self._config["clim"])}')
                         if self._config['t'] is not None:
                             uri += f'&exp_filter_t={self._config["t"]:d}'
+                        if loc.startswith('roi_id'):
+                            uri += f'&provide_coverage={json.dumps(self._config["provide_coverage"])}'
                         self.async_requests.append(uri)
                         self.logger.debug(f'Generated URI: {uri}')
 
