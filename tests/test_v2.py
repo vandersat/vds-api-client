@@ -31,6 +31,13 @@ def test_gridded_config(credentials, example_config_area):
         vds.gen_gridded_data_request(products=['Nonexisting'])
 
 
+def test_empty_config(credentials):
+    vds = VdsApiV2(credentials['user'], credentials['pw'])
+    vds.environment = 'staging'
+    with pytest.raises(RuntimeError):
+        vds.gen_uri()
+
+
 def test_ts_config(credentials, example_config_ts):
     vds = VdsApiV2(credentials['user'], credentials['pw'])
     vds.environment = 'staging'
@@ -52,6 +59,7 @@ def test_ts_config(credentials, example_config_ts):
         'av_win': 0,
         'masked': True,
         'clim': False,
+        'provide_coverage': False,
         't': None
     }
     with pytest.raises(RuntimeError):
@@ -63,7 +71,7 @@ def test_gen_uri_grid(credentials, example_config_area):
     vds.environment = 'staging'
     vds.gen_gridded_data_request(gen_uri=True, config_file=example_config_area,
                                  start_date='2018-01-01', end_date=datetime(2019, 1, 1),
-                                 nrequests=2)
+                                 nrequests=2, log_config=True)
     assert vds.async_requests == [
         'https://staging.vandersat.com/api/v2/products/TEST-PRODUCT_V001_25000/gridded-data?'
         'lat_min=66&lat_max=67&lon_min=-6&lon_max=-5&'
@@ -78,29 +86,57 @@ def test_gen_uri_grid(credentials, example_config_area):
     assert len(vds.async_requests) == 1
     assert all(['&format=netcdf4' in req for req in vds.async_requests])
 
+    with pytest.raises(ValueError):
+        vds.gen_gridded_data_request(gen_uri=True, config_file=example_config_area,
+                                     start_date='2018-01-01', end_date=datetime(2019, 1, 1),
+                                     file_format='json')  # faulty file_format
+
 
 def test_gen_uri_ts(credentials, example_config_ts):
     vds = VdsApiV2(credentials['user'], credentials['pw'])
     vds.environment = 'staging'
-    vds.gen_time_series_requests(gen_uri=True, config_file=example_config_ts, products=['TEST-PRODUCT_V001_25000'])
-    assert vds.async_requests == [
+    vds.gen_time_series_requests(gen_uri=True, config_file=example_config_ts,
+                                 products=['TEST-PRODUCT_V001_25000'],
+                                 log_config=True)
+    async_requests_should = [
         'https://staging.vandersat.com/api/v2/products/TEST-PRODUCT_V001_25000/point-time-series?'
-        'start_time=2020-01-01&end_time=2020-01-03&lat=66.875&lon=-5.875&'
-        'format=csv&avg_window_days=0&avg_window_direction=center&include_masked_data=false&climatology=false',
+        'start_time=2020-01-01&end_time=2020-01-03&lat=66.875&lon=-5.875'
+        '&format=csv&avg_window_days=0&avg_window_direction=center&include_masked_data=false&climatology=false',
         'https://staging.vandersat.com/api/v2/products/TEST-PRODUCT_V001_25000/point-time-series?'
-        'start_time=2020-01-01&end_time=2020-01-03&lat=66.125&lon=-5.125&'
-        'format=csv&avg_window_days=0&avg_window_direction=center&include_masked_data=false&climatology=false',
+        'start_time=2020-01-01&end_time=2020-01-03&lat=66.125&lon=-5.125'
+        '&format=csv&avg_window_days=0&avg_window_direction=center&include_masked_data=false&climatology=false',
         'https://staging.vandersat.com/api/v2/products/TEST-PRODUCT_V001_25000/roi-time-series?'
-        'start_time=2020-01-01&end_time=2020-01-03&roi_id=25009&format=csv&'
-        'avg_window_days=0&avg_window_direction=center&include_masked_data=false&climatology=false',
+        'start_time=2020-01-01&end_time=2020-01-03&roi_id=25009&format=csv'
+        '&avg_window_days=0&avg_window_direction=center&include_masked_data=false&climatology=false'
+        '&provide_coverage=false',
         'https://staging.vandersat.com/api/v2/products/TEST-PRODUCT_V001_25000/roi-time-series?'
-        'start_time=2020-01-01&end_time=2020-01-03&roi_id=25010&format=csv&'
-        'avg_window_days=0&avg_window_direction=center&include_masked_data=false&climatology=false'
+        'start_time=2020-01-01&end_time=2020-01-03&roi_id=25010&format=csv'
+        '&avg_window_days=0&avg_window_direction=center&include_masked_data=false&climatology=false'
+        '&provide_coverage=false'
     ]
+
+    assert vds.async_requests == async_requests_should
     vds.gen_uri(start_time='2020-01-02')
     assert len(vds.async_requests) == 8
     vds.gen_uri(add=False, file_format='json')
     assert len(vds.async_requests) == 4
+    vds.async_requests = []
+    vds.gen_time_series_requests(gen_uri=True, products=['TEST-PRODUCT_V001_25000'],
+                                 start_time='2020-01-01', end_time='2020-01-03',
+                                 lons=[-5.875, -5.125], lats=[66.875, 66.125],
+                                 rois=[25009, 'Right'],
+                                 log_config=True)
+    assert vds.async_requests == async_requests_should
+
+    with pytest.raises(ValueError):
+        vds.gen_time_series_requests(gen_uri=True, products=['TEST-PRODUCT_V001_25000'],
+                                     start_time='2020-01-01', end_time='2020-01-03',
+                                     rois=[25009], av_win=-10)  # Invalid window size
+
+    with pytest.raises(ValueError):
+        vds.gen_time_series_requests(gen_uri=True, products=['TEST-PRODUCT_V001_25000'],
+                                     start_time='2020-01-01', end_time='2020-01-03',
+                                     rois=[25009], av_win_dir='forward')  # Invalid window direction
 
 
 def test_getarea(credentials, example_config_area, tmpdir):
