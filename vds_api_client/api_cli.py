@@ -257,7 +257,7 @@ def grid(ctx, config_file, products, lon_range, lat_range, date_range,
               help='Direction for moving average')
 @click.option('--clim', is_flag=True, help='Include climatology column in output')
 @click.option('-t', type=int, help='Rootzone soil moisture parameter (days) (not for streaming)')
-@click.option('--provide-coverage/--no-provide-coverage', is_flag=True, default=False, show_default=True,
+@click.option('--provide-coverage/--no-provide-coverage', '-cov', is_flag=True, default=False, show_default=True,
               help='Provide coverage column for ROI time-series')
 @click.option('--outfold', '-o', help='Path to output the data (created if no-existent)')
 @click.option('--verbose/--no-verbose', '-v', default=False, help='Set debug statements on')
