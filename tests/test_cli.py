@@ -74,6 +74,7 @@ def test_cli_v2_ts_allopts(runner, tmpdir):
                                  '--av_win', '3',
                                  '--clim',
                                  '-t', '10',
+                                 '--provide-coverage',
                                  '-o', tmpdir])
     assert result.exit_code == 0
     assert not result.exception
