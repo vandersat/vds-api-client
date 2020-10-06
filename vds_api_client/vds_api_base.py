@@ -366,6 +366,8 @@ class VdsApiBase(Requester):
         rois: (list of int) or Rois
             collection of roi ids or an Rois object (filtered)
         """
+        warnings.warn("delete_rois_from_account is deprecated, delete method will should be used instead",
+                      DeprecationWarning)
         if type(rois) is Rois:
             if not rois.filter_applied:
                 raise RuntimeError('Apply a .filter on your Rois instance, '
