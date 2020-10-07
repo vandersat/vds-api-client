@@ -17,11 +17,12 @@ vds_api_client
 Description
 ===========
 
+- `Installation instructions`_
+
 Using this module, one can get data from the VanderSat API using either:
 
-- :ref:`Installation <installation>`
-- :ref:`Command line <cli_exmaples>`
-- :ref:`Python console <python_exmaples>`
+- `Command Line Interface (CLI)`_
+- `Python API`_
 
 Compatible for Linux, Mac and Windows
 
@@ -31,7 +32,7 @@ This package offers an easy interface to the asynchronous endpoints offered by
 the `VanderSat API <https://maps.vandersat.com/api/v2/>`_. However, not all available
 endpoints can be accessed through this package.
 
-.. _installation:
+.. _Installation instructions:
 
 Installation
 ============
@@ -71,7 +72,7 @@ With this activated environment one can access the vds cli with
 (If not, your installation did not succeed)
 
 
-.. _cli_exmaples:
+.. _Command Line Interface (CLI):
 
 Command line interface
 ======================
@@ -157,7 +158,7 @@ Get time-series with all additional columns
 
 ``$ vds-api ts -p SM-SMAP-LN-DESC_V003_100 -dr 2015-04-01 2019-01-01 -ll 52 4.5 -o tsfold --masked --av_win 35 --backward --clim -t 20 -cov -v``
 
-.. _python_exmaples:
+.. _Python API:
 
 Example usage Python API
 =========================
