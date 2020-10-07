@@ -19,15 +19,22 @@ Description
 
 Using this module, one can get data from the VanderSat API using either:
 
-- Command line
-- Python console
+- :ref:`Installation <installation>`
+- :ref:`Command line <cli_exmaples>`
+- :ref:`Python console <python_exmaples>`
 
 Compatible for Linux, Mac and Windows
-Python >3.6
+
+Python >= 3.6
 
 This package offers an easy interface to the asynchronous endpoints offered by
 the `VanderSat API <https://maps.vandersat.com/api/v2/>`_. However, not all available
 endpoints can be accessed through this package.
+
+.. _installation:
+
+Installation
+============
 
 Required packages
 -------------------------------------
@@ -42,32 +49,37 @@ Setting up an environment
 -------------------------
 If you don't have an environment yet or would like a new one, use the following line to make a new one using `conda <https://docs.conda.io/en/latest/>`_
 
-    ``$ conda create -n vds_api -c conda-forge python=3 requests "click>=7" pandas joblib pip``
+``$ conda create -n vds_api -c conda-forge python=3 requests "click>=7" pandas joblib pip``
 
 activate it
 
-    ``$ conda activate vds_api``
+``$ conda activate vds_api``
 
 and follow the installation steps
 
-Installation
-------------
+Installing the client
+---------------------
 
 The package can be installed directly from PyPI. Activate your environment and then install with
 
-    ``$ pip install vds_api_client``
+``$ pip install vds_api_client``
 
 With this activated environment one can access the vds cli with
 
-    ``$ vds-api``
+``$ vds-api``
 
 (If not, your installation did not succeed)
 
 
+.. _cli_exmaples:
+
+Command line interface
+======================
+
 Available CLI commands
 ----------------------------------------------
 
-    ``$ vds-api``
+``$ vds-api``
 
 will show all available commands which should include:
 
@@ -79,11 +91,11 @@ will show all available commands which should include:
 
 Calling any of these commands should be done after suppliying credentials:
 
-    ``$ vds api -u [username] -p [password] [command]``
+``$ vds api -u [username] -p [password] [command]``
 
 And it is always a good idea to start with a test:
 
-    ``$ vds-api -u [username] -p [password] test``
+``$ vds-api -u [username] -p [password] test``
 
 
 Credentials
@@ -91,17 +103,13 @@ Credentials
 For each api call using the cli, the credentials need to be supplied.
 These can be parsed along with the call by typing them explicitly like:
 
-    ``$ vds-api -u [username] -p [password] [command]``
+``$ vds-api -u [username] -p [password] [command]``
 
 However, it is also convenient to store the credentials so they don't have to be
 typed each time. `Set the environment variables <https://www.schrodinger.com/kb/1842>`_
 ``$VDS_USER`` and ``$VDS_PASS``
 with the correct values to automatically fill in your credentials.
 
-.. note::
-    **From this point on, the credentials don't have to be parsed explicitly anymore thus the syntax reduces to:**
-
-    ``$ vds-api [command]``
 
 Impersonation
 -------------
@@ -109,114 +117,47 @@ Impersonation
 If a user manages another VanderSat API user account, it can impersonate this user.
 Through the CLI this can also be done using the ``--impersonate`` flag. e.g.
 
-    ``$ vds-api -u manager@company.com -p password --impersonate "user@company.com" [command]``
+``$ vds-api -u manager@company.com -p password --impersonate "user@company.com" [command]``
 
 or when credentials were stored already
 
-    ``$ vds-api --impersonate "user@company.com" [command]``
+``$ vds-api --impersonate "user@company.com" [command]``
 
+.. note::
+    **From this point on, the credentials don't have to be parsed explicitly anymore thus the syntax reduces to:**
 
-Command specifications: ``info``
-----------------------------------------------
+``$ vds-api [command]``
 
-Get a summary of all user information. The shown information contains the following:
+Command specific options
+------------------------
 
-* registred user information (name, email, role, etc)
-* registred products (api-name | product-name)
-* roi information
+Use the help function to retrieve all options for the command line interface.
 
-All info is shown by default but it is also possible to only show part of it with the following options:
+``$ vds-api [command] --help``
 
--u, --user           show user info
--p, --product_list   show product-list
--r, --roi            show roi info
-
-E.g. to show all available products, type:
-
-    ``$ vds-api info -p``
-
-Command specifications: ``grid``
-----------------------------------------------
-Get one or multiple gridded data files in GeoTIFF or NetCDF.
-
-See all available options by typing:
-
-    ``$ vds-api grid --help``
-
-Required options:
-
--p, --product      ``str`` // Product api-Name to download,
-                   you can specify multiple products by repeating the ``-p`` flag
--lo, --lon_range   ``float float`` // Range of longitudes, ``-lo min max``
--la, --lat_range   ``float float`` // Range of latitudes, ``-la min max``
--dr, --date_range   ``yyyy-mm-dd yyyy-mm-dd`` // date range to download separated by a space
-
-Optional options:
-
--f, --format       [``gtiff|netcdf4``] // File format to download, defaults to gtiff
--n, --n_proc       ``int`` // Number of simultaneous calls to the server (default 4, pref <= 8)
--o, --outfold      ``str`` // Path to output the data to (created if it does not exist)
--v, --verbose      Switch to increase the output messages
--c, --config_file  ``str`` // Path to condiguration file containing pre-defined parameters
--z, --zipped       Switch to request the data zipped (if ``n_procs > 1``,
-                   multiple zip files will be received)
-
-Command specifications: ``ts``
-----------------------------------------------
-Get one or multiple csv files with time-series.
-
-See all available options by typing:
-
-    ``$ vds-api ts --help``
-
-Required options:
-
--p, --product      ``str`` // Product api-Name to download,
-                   you can specify multiple products by repeating the ``-p`` flag
--dr, --date_range   ``yyyy-mm-dd yyyy-mm-dd`` // date range to download separated by a space
-
-At least one of the following (yet multiple allowed):
-
--ll, --latlon  ``float float`` // Latitude-Longitude pair to extract ts, can be multiple by repeating -ll
--r, --roi      ``int`` // Region of interest id that can be referenced at maps.vandersat.com. Repeat -r for multiple
-
-Optional options:
-
--f, --format       [``csv|json``] // File format to download, defaults to csv
---masked           Switch to also download flagged data
---av_win           ``int`` // Add averaging +/- days window column to output (supply full window)
---backward         Backward moving average, defaults to --center if --av_win xx is used
---clim             Switch to include climatology column in output
--t                 ``int`` // Rootzone soil moisture parameter (days) (not used with streaming)
--v, --verbose      Switch to increase the output messages
--c, --config_file  text // Path to condiguration file containing pre-defined parameters
--o, --outfold      ``str`` // Path to output the data to (created if it does not exist)
-
-
-V2 CLI Examples
-===============
 
 Example usage CLI V2 grid
 ----------------------------------------------
 Get L-band for one month over NL in geotiff with 8 threads
 
-    ``$ vds-api grid -p SM-SMAP-LN-DESC_V003_100 -dr 2015-04-01 2015-04-30 -lo 3 8 -la 50 54 -o SM_L_Data -n 8 -v``
+``$ vds-api grid -p SM-SMAP-LN-DESC_V003_100 -dr 2015-04-01 2015-04-30 -lo 3 8 -la 50 54 -o SM_L_Data -n 8 -v``
 
 Get L+C+X-band for two dates over NL in netcdf
 
-    ``$ vds-api grid -p SM-SMAP-LN-DESC_V003_100 -p SM-AMSR2-C1N-DESC_V003_100 -p SM-AMSR2-XN_V003_100 -f netcdf4 -dr 2016-07-01 2016-07-02 -lo 3.0 8.0 -la 50.0 54.0 -o NCData -v``
+``$ vds-api grid -p SM-SMAP-LN-DESC_V003_100 -p SM-AMSR2-C1N-DESC_V003_100 -p SM-AMSR2-XN_V003_100 -f netcdf4 -dr 2016-07-01 2016-07-02 -lo 3.0 8.0 -la 50.0 54.0 -o NCData -v``
 
 Example usage CLI V2 ts
 ----------------------------------------------
 
 Get L-band time-series for a region-of-interest (roi) and a lat-lon pair
 
-    ``$ vds-api ts -p SM-SMAP-LN-DESC_V003_100 -dr 2015-05-01 2020-01-01 -ll 52 4.5 -r 3249 -o tsfold -v``
+``$ vds-api ts -p SM-SMAP-LN-DESC_V003_100 -dr 2015-05-01 2020-01-01 -ll 52 4.5 -r 3249 -o tsfold -v``
 
 Get time-series with all additional columns
 
-    ``$ vds-api ts -p SM-SMAP-LN-DESC_V003_100 -dr 2015-04-01 2019-01-01 -ll 52 4.5 -o tsfold --masked --av_win 35 --backward --clim -t 20 -v``
+``$ vds-api ts -p SM-SMAP-LN-DESC_V003_100 -dr 2015-04-01 2019-01-01 -ll 52 4.5 -o tsfold --masked --av_win 35 --backward --clim -t 20 -v``
 
+.. _python_exmaples:
 
 Example usage Python API
 =========================
@@ -412,7 +353,7 @@ and give the corresponding ids:
        25010  /  [X]  | Right      | 9.949e+08 ha | 2020-08-16 12:58 | Right side pixels
        25011  /  [X]  | Bottom     | 6.616e+08 ha | 2020-08-16 12:59 | Bottom side pixels
 
-    [9211, 9212]
+    [25010, 25011]
 
 **Geometry**
 
