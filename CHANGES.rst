@@ -3,22 +3,26 @@ Changelog
 =========
 
 
+Version 2.1.1
+=============
+- Added `provide_coverage` keyword to roi-time series and --provide-coverage, -cov to cli
+
 Version 2.1.0
 =============
 - Roi options expanded in python api: filter, update, hide-all, show-all
 - Use unambiguous date and time formats in logs
 - fix cli user info command
 
+----
+
 Version 2.0.4
 =============
 - Add --backward to cli
 - fix CLI
 
-
 Version 2.0.3
 =============
 - Bugfix: Delete method supplied with incorrect authentication
-
 
 Version 2.0.2
 =============
