@@ -4,6 +4,7 @@ import json
 from math import ceil, nan
 from vds_api_client.requester import Requester
 
+VALID_GEOMETRIES = {'Polygon', 'MultiPoligon'}
 REQ = Requester()
 
 
@@ -323,6 +324,55 @@ class Roi(object):
     def __repr__(self):
         return str(self)
 
+    @classmethod
+    def _from_feature(cls, feature, name_column='name', description_column='description', display=True):
+        """
+        Upload an roi from a geojson feature
+
+        Parameters
+        ----------
+        feature: dict
+            geojson feature with a Polygon or MultiPolygon geometry
+        name_column: str
+            Properties column name to extract name from
+        description_column: str
+            Properties column name to extract description from
+        display: bool
+            Display state in the viewer
+
+        """
+        headers = {"X-Fields": 'rois{id, name, description, created_at, area, labels, display}'}
+        if feature.get('type', None) != 'Feature':
+            raise ValueError('Provided feature is not a valid feature')
+        geometry = feature.get('geometry')
+        if geometry.get('type') not in VALID_GEOMETRIES:
+            raise TypeError(f'Unvalid geometry type, expected one of {VALID_GEOMETRIES} '
+                            f'got {geometry.get("type")}')
+        properties = feature.get('properties').copy()
+        name = properties.pop(name_column, None)
+        if name is None:
+            raise ValueError('Requires feature to have a name column')
+        description = properties.pop(description_column, '')
+
+        geojson = {'type': 'FeatureCollection',
+                   'features': [feature]}
+
+        payload = {
+            "rois": [
+                {
+                    "name": name,
+                    "description": description,
+                    "geojson": geojson,
+                    "display": display,
+                    "metadata": [properties]
+                }
+            ]
+        }
+        roi = cls('', name, nan, description, display=display)
+        content = REQ.post_content(roi.uri, payload, headers=headers)
+        for key, value in content.items():
+            setattr(roi, key, value)
+
     @property
     def uri(self):
         return f'https://{REQ.host}/api/v2/rois/{self.id}'
@@ -398,11 +448,10 @@ class GeoJson(object):
     def _validate_geojson(self):
         if self.type != 'FeatureCollection':
             raise ValueError(f'Expected type FeatureCollection, received {self.type}')
-        valid_features = {'Polygon', 'MultiPoligon'}
         for i, feature in enumerate(self.features):
-            if not feature.get('type') in valid_features:
+            if not feature.get('type') in VALID_GEOMETRIES:
                 raise ValueError(f'Feature {i} invalid, expected one of feature '
-                                 f'types {valid_features} got {feature.get("type")}')
+                                 f'types {VALID_GEOMETRIES} got {feature.get("type")}')
 
     def __str__(self):
         return str(self._geojson)
