@@ -366,6 +366,13 @@ class Roi(object):
         self.description = roi.get('description')
         self.display = roi.get('display')
 
+    def delete(self):
+        """
+        Delete Roi from server
+
+        """
+        REQ.logger.debug(f'Deleting ROI : {self.uri}')
+        REQ.delete(self.uri)
 
 
 class GeoJson(object):
