@@ -449,12 +449,13 @@ class GeoJson(object):
         if self.type != 'FeatureCollection':
             raise ValueError(f'Expected type FeatureCollection, received {self.type}')
         for i, feature in enumerate(self.features):
-            if not feature.get('type') in VALID_GEOMETRIES:
+            geometry = feature.get('geometry', {})
+            if not geometry.get('type') in VALID_GEOMETRIES:
                 raise ValueError(f'Feature {i} invalid, expected one of feature '
                                  f'types {VALID_GEOMETRIES} got {feature.get("type")}')
 
     def __str__(self):
-        return str(self._geojson)
+        return json.dumps(self._geojson)
 
     def __repr__(self):
         out = f'{self.type} of {len(self.features)} items and properties: {self.properties}'

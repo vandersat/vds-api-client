@@ -1,9 +1,11 @@
 
 import os
+import pathlib
 from glob import glob
 import pytest
 from click.testing import CliRunner
 import vds_api_client
+import tests
 
 
 @pytest.fixture
@@ -54,5 +56,16 @@ def clean_uuid_files():
 @pytest.fixture(autouse=True)
 def set_environment_staging():
     vds_api_client.ENVIRONMENT = 'staging'
+
+
+@pytest.fixture
+def testdata_dir():
+    '''
+    Fixture responsible for searching a folder with the same name of test
+    module and, if available, moving all contents to a temporary directory so
+    tests can use them freely.
+    '''
+    tests_path = pathlib.Path(tests.__file__)
+    return os.path.join(tests_path.parent, 'testdata')
 
 # EOF

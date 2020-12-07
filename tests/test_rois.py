@@ -1,8 +1,8 @@
-
+import os
 import datetime as dt
 
 from vds_api_client.vds_api_base import VdsApiBase, getpar_fromtext
-from vds_api_client.types import Rois, Roi
+from vds_api_client.types import Rois, Roi, GeoJson
 
 
 def test_rois_getitem(credentials, example_config_ts):
@@ -80,3 +80,52 @@ def test_roi_update():
     assert roi.name == 'NewName'
     assert roi.description == 'Same rectangle'
     assert roi.display
+
+
+def test_geojson_init():
+
+    geojson_should = (
+        '{"type": "FeatureCollection", "features": [{"type": "Feature", "id": "0", '
+        '"geometry": {"type": "Polygon", "coordinates": [[[-5.9, 66.2], [-5.8, 66.2], [-5.8, 66.1], '
+        '[-5.9, 66.1], [-5.9, 66.2]]]}, "properties": {"id": 30, "name": "lower-left", '
+        '"descript": "test shape for the python api client"}}, {"type": "Feature", "id": "1", '
+        '"geometry": {"type": "Polygon", "coordinates": [[[-5.85, 66.25], [-5.75, 66.25], '
+        '[-5.75, 66.15], [-5.850535, 66.15], [-5.85, 66.25]]]}, "properties": {"id": null, '
+        '"name": "shifted", "descript": "shifted test region"}}]}'
+    )
+    geojson = GeoJson(geojson_should)
+    assert str(geojson) == geojson_should
+
+    geojson_dict = {'type': 'FeatureCollection',
+                    'features': [{'type': 'Feature', 'id': '0',
+                                  'geometry': {'type': 'Polygon', 'coordinates': [
+                                      [[-5.9, 66.2], [-5.8, 66.2], [-5.8, 66.1],
+                                       [-5.9, 66.1], [-5.9, 66.2]]]},
+                                  'properties': {'id': 30, 'name': 'lower-left',
+                                                 'descript': 'test shape for the python api client'}},
+                                 {'type': 'Feature', 'id': '1',
+                                  'geometry': {'type': 'Polygon', 'coordinates': [
+                                      [[-5.85, 66.25], [-5.75, 66.25], [-5.75, 66.15],
+                                       [-5.850535, 66.15], [-5.85, 66.25]]]},
+                                  'properties': {'id': None, 'name': 'shifted',
+                                                 'descript': 'shifted test region'}}]}
+    geojson = GeoJson(geojson_dict)
+    assert str(geojson) == geojson_should
+
+
+def test_geojson_from_shapefile(testdata_dir):
+
+    geojson_should = (
+        '{"type": "FeatureCollection", "features": [{"type": "Feature", "id": "0", '
+        '"geometry": {"type": "Polygon", "coordinates": [[[-5.9, 66.2], [-5.8, 66.2], [-5.8, 66.1], '
+        '[-5.9, 66.1], [-5.9, 66.2]]]}, "properties": {"id": 30, "name": "lower-left", '
+        '"descript": "test shape for the python api client"}}, {"type": "Feature", "id": "1", '
+        '"geometry": {"type": "Polygon", "coordinates": [[[-5.85, 66.25], [-5.75, 66.25], '
+        '[-5.75, 66.15], [-5.850535, 66.15], [-5.85, 66.25]]]}, "properties": {"id": null, '
+        '"name": "shifted", "descript": "shifted test region"}}]}'
+    )
+    shp_zip = os.path.join(testdata_dir, 'two-rectangles.zip')
+
+    vds = VdsApiBase()  # Necessary for the credentials to be set
+    geojson = GeoJson.from_shapefile(shp_zip)
+    assert str(geojson) == geojson_should
