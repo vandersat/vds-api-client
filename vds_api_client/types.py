@@ -1,9 +1,8 @@
 import re
 import datetime as dt
-from math import ceil
+import json
+from math import ceil, nan
 from vds_api_client.requester import Requester
-
-import pandas as pd
 
 REQ = Requester()
 
@@ -366,5 +365,81 @@ class Roi(object):
         self.name = roi.get('name')
         self.description = roi.get('description')
         self.display = roi.get('display')
+
+
+
+class GeoJson(object):
+    """
+    Construct GeoJson from dict or a shapefile
+
+    Parameters
+    ----------
+    geojson: dict or str
+
+    """
+    uri = f'https://{REQ.host}/api/v2/rois/convert'
+
+    def __init__(self, geojson):
+
+        if isinstance(geojson, str):
+            geojson = json.loads(geojson)
+        if 'geojson' in geojson:
+            geojson = geojson['geojson']
+        self._geojson = geojson
+        self._validate_geojson()
+
+    def _validate_geojson(self):
+        if self.type != 'FeatureCollection':
+            raise ValueError(f'Expected type FeatureCollection, received {self.type}')
+        valid_features = {'Polygon', 'MultiPoligon'}
+        for i, feature in enumerate(self.features):
+            if not feature.get('type') in valid_features:
+                raise ValueError(f'Feature {i} invalid, expected one of feature '
+                                 f'types {valid_features} got {feature.get("type")}')
+
+    def __str__(self):
+        return str(self._geojson)
+
+    def __repr__(self):
+        out = f'{self.type} of {len(self.features)} items and properties: {self.properties}'
+        return out
+
+    @property
+    def type(self):
+        return self._geojson.get('type', None)
+
+    @property
+    def features(self):
+        return self._geojson['features']
+
+    def __len__(self):
+        return len(self.features)
+
+    @property
+    def properties(self):
+        if len(self) > 0:
+            return list(self.features[0]['properties'])
+        else:
+            return None
+
+    @classmethod
+    def from_shapefile(cls, shapefile):
+        """
+        Convert a shapefile to a geojson
+
+        Parameters
+        ----------
+        shapefile: str
+            Path to the shapefile
+
+        Returns
+        -------
+        dict: geojson parsed as python object
+
+        """
+        with open(shapefile, 'rb') as shp:
+            geojson = REQ.post_content(cls.uri, None, files={'data': shp})
+        return cls(geojson)
+
 
 # EOF
