@@ -4,6 +4,8 @@ import json
 from math import ceil, nan
 from vds_api_client.requester import Requester
 
+import pandas as pd
+
 VALID_GEOMETRIES = {'Polygon', 'MultiPoligon'}
 REQ = Requester()
 
@@ -458,8 +460,10 @@ class GeoJson(object):
         return json.dumps(self._geojson)
 
     def __repr__(self):
-        out = f'{self.type} of {len(self.features)} items and properties: {self.properties}'
-        return out
+        out = f'{self.type} of {len(self.features)} features\n'
+        df = pd.DataFrame([feature['properties'] for feature in self.features])
+        df['geometry'] = '(...)'
+        return out + str(df)
 
     @property
     def type(self):
