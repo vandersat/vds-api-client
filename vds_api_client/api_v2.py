@@ -449,7 +449,7 @@ class VdsApiV2(VdsApiBase):
         uri = f'http://{self.host}/api/v2/products/{product}/point-value?lat={lat}&lon={lon}&date={date}'
         return self.get_content(uri)['value']
 
-    def get_roi_df(self, product, roi, start_date, end_date):
+    def get_roi_df(self, product, roi, start_date, end_date, provide_coverage=False):
         """
         Method to querry streamed json output and transform this into
         a pandas DataFrame
@@ -464,6 +464,9 @@ class VdsApiV2(VdsApiBase):
             start date to retrieve data yyyy-mm-dd
         end_date: str
             end date to retrieve data yyyy-mm-dd (inclusive)
+        provide_coverage: Bool, optional
+            If True, the coverage parameter will be
+            included. Default is False.
 
         Returns
         -------
@@ -473,7 +476,8 @@ class VdsApiV2(VdsApiBase):
         roi_id = self.rois[roi].id
         uri = (f'https://{self.host}/api/v2/products/{product}/roi-time-series-sync?'
                f'roi_id={roi_id}&start_time={start_date}&end_time={end_date}&climatology=true&'
-               f'avg_window_direction=backward&avg_window_days=20&format=csv')
+               f'avg_window_direction=backward&provide_coverage={str(provide_coverage).lower()}'
+               f'&avg_window_days=20&format=csv')
         r = self.get(uri)
         csv = BytesIO()
         for chunk in r.iter_content(2048):
