@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Unreleased
+==========
+
+Version 2.1.2
+=============
+- Added `provide_coverage` keyword to synchronous roi time series request
+- Fix bug when filtering rois on decsription regex when descriptions were missing
+- Add deprecation warning for `delete_rois_from_account` to be be replaced with an roi.delete()
 
 Version 2.1.1
 =============
