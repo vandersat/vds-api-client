@@ -214,7 +214,7 @@ class Rois(object):
                 continue
             elif nre is not None and not nre.search(roi.name):
                 continue
-            elif dre is not None and not dre.search(roi.description):
+            elif dre is not None and not dre.search(str(roi.description)):
                 continue
             else:
                 new_rois.append(roi)
