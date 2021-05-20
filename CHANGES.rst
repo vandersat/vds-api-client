@@ -5,6 +5,10 @@ Changelog
 Unreleased
 ==========
 
+Version 2.1.3
+=============
+- Import warnings module
+
 Version 2.1.2
 =============
 - Added `provide_coverage` keyword to synchronous roi time series request
