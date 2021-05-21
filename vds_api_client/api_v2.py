@@ -449,6 +449,9 @@ class VdsApiV2(VdsApiBase):
         uri = f'http://{self.host}/api/v2/products/{product}/point-value?lat={lat}&lon={lon}&date={date}'
         return self.get_content(uri)['value']
 
+    @retry(wait_exponential_multiplier=1_000,
+           stop_max_attempt_number=3,
+           retry_on_exception=lambda exception: isinstance(exception, requests.Timeout))
     def get_roi_df(self, product, roi, start_date, end_date, provide_coverage=False):
         """
         Method to querry streamed json output and transform this into
@@ -478,7 +481,7 @@ class VdsApiV2(VdsApiBase):
                f'roi_id={roi_id}&start_time={start_date}&end_time={end_date}&climatology=true&'
                f'avg_window_direction=backward&provide_coverage={str(provide_coverage).lower()}'
                f'&avg_window_days=20&format=csv')
-        r = self.get(uri)
+        r = self.get(uri, timeout=5)
         csv = BytesIO()
         for chunk in r.iter_content(2048):
             csv.write(chunk)
