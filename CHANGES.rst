@@ -4,6 +4,7 @@ Changelog
 
 Unreleased
 ==========
+- Add 3 retries to get_roi_df method before raising an error
 
 Version 2.1.3
 =============
