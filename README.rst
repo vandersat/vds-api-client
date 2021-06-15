@@ -286,7 +286,7 @@ endpoint
     vds = VdsApiV2()
 
     # Load using the roi-id
-    val = vds.get_value('SM-XN_V001_100', '2020-04-01', lon=20.6, 40.4)
+    val = vds.get_value('SM-XN_V001_100', '2020-04-01', lon=20.6, lat=40.4)
 
 
 
