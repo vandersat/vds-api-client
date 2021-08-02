@@ -452,6 +452,8 @@ class GeoJson(object):
     def _validate_geojson(self):
         if self.type != 'FeatureCollection':
             raise ValueError(f'Expected type FeatureCollection, received {self.type}')
+        if len(self) == 0:
+            raise ValueError('No features found in FeatureCollection')
         for i, feature in enumerate(self.features):
             geometry = feature.get('geometry', {})
             if not geometry.get('type') in VALID_GEOMETRIES:
@@ -463,7 +465,7 @@ class GeoJson(object):
 
     def __repr__(self):
         out = f'{self.type} of {len(self.features)} features\n'
-        df = pd.DataFrame([feature['properties'] for feature in self.features])
+        df = pd.DataFrame([feature['properties'] for feature in self.properties])
         df['geometry'] = '(...)'
         return out + str(df)
 
@@ -480,10 +482,7 @@ class GeoJson(object):
 
     @property
     def properties(self):
-        if len(self) > 0:
-            return list(self.features[0]['properties'])
-        else:
-            return None
+        return [feature['properties'] for feature in self.features]
 
     @classmethod
     def from_shapefile(cls, shapefile):
