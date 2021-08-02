@@ -305,7 +305,7 @@ class Roi(object):
     labels: list, optional
         Labels applied to this Roi
     geojson: str, optional
-        Geojson string
+        Geojson geometry string
 
     """
     def __init__(self, id, name, area, description,
@@ -329,53 +329,56 @@ class Roi(object):
         return str(self)
 
     @classmethod
-    def _from_feature(cls, feature, name_column='name', description_column='description', display=True):
+    def upload(cls, name, description, geometry_json, display=True, metadata=None):
         """
-        Upload an roi from a geojson feature
+        Upload an roi to the VanderSat api and retrieve Roi object
+
+        Warning: using this classmethod standalone does not update the
+        VdsApiV2.rois attribute with this roi. Use VdsApiV2.upload_rois()
+        instead.
 
         Parameters
         ----------
-        feature: dict
-            geojson feature with a Polygon or MultiPolygon geometry
-        name_column: str
-            Properties column name to extract name from
-        description_column: str
-            Properties column name to extract description from
-        display: bool
-            Display state in the viewer
+        name
+            name to give roi
+        description
+            description on roi
+        geometry_json
+            geometry field of feature in json format
+        display
+            initial state of the display flag in the data viewer
+        metadata
+            optional dictionary with metadata
 
         """
         headers = {"X-Fields": 'rois{id, name, description, created_at, area, labels, display}'}
-        if feature.get('type', None) != 'Feature':
-            raise ValueError('Provided feature is not a valid feature')
-        geometry = feature.get('geometry')
-        if geometry.get('type') not in VALID_GEOMETRIES:
-            raise TypeError(f'Unvalid geometry type, expected one of {VALID_GEOMETRIES} '
-                            f'got {geometry.get("type")}')
-        properties = feature.get('properties').copy()
-        name = properties.pop(name_column, None)
-        if name is None:
-            raise ValueError('Requires feature to have a name column')
-        description = properties.pop(description_column, '')
 
-        geojson = {'type': 'FeatureCollection',
-                   'features': [feature]}
-
+        metadata = {} if metadata is None else metadata
         payload = {
             "rois": [
                 {
                     "name": name,
                     "description": description,
-                    "geojson": geojson,
+                    "geojson": geometry_json,
                     "display": display,
-                    "metadata": [properties]
+                    "metadata": [metadata]
                 }
             ]
         }
-        roi = cls('', name, nan, description, display=display)
-        content = REQ.post_content(roi.uri, payload, headers=headers)
-        for key, value in content.items():
-            setattr(roi, key, value)
+
+        uploaded_rois = REQ.post_content(f"https://{REQ.host}/api/v2/rois/", payload, headers=headers)
+        uploaded_roi = uploaded_rois["rois"][0]
+
+        roi = cls(
+            id=uploaded_roi["id"],
+            name=uploaded_roi["name"],
+            area=uploaded_roi["area"],
+            description=uploaded_roi["description"],
+            display=uploaded_roi["display"],
+            created_at=uploaded_roi["created_at"],
+            labels=uploaded_roi["labels"],
+        )
+        return roi
 
     @property
     def uri(self):
