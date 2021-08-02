@@ -107,20 +107,22 @@ class Rois(object):
     def __init__(self, roi_list):
 
         if roi_list is None:
-            self._rois = ()
+            self._rois = []
         else:
-            self._rois = [Roi(id=int(roi_dict.get('id')),
-                              name=str(roi_dict.get('name')),
-                              area=float(roi_dict.get('area')),
-                              description=roi_dict.get('description'),
-                              created_at=dt.datetime.strptime(roi_dict.get('created_at'),
-                                                              '%Y-%m-%dT%H:%M:%S.%f')
-                              if roi_dict.get('created_at') is not None else dt.datetime(1900, 1, 1),
-                              display=roi_dict.get('display', None),
-                              metadata=roi_dict.get('metadata', None),
-                              labels=roi_dict.get('labels', None),
-                              geojson=roi_dict.get('geojson', None))
-                          for roi_dict in roi_list]
+            self._rois = sorted(
+                (Roi(id=int(roi_dict.get('id')),
+                     name=str(roi_dict.get('name')),
+                     area=float(roi_dict.get('area')),
+                     description=roi_dict.get('description'),
+                     created_at=dt.datetime.strptime(roi_dict.get('created_at'),
+                                                     '%Y-%m-%dT%H:%M:%S.%f')
+                     if roi_dict.get('created_at') is not None else dt.datetime(1900, 1, 1),
+                     display=roi_dict.get('display', None),
+                     metadata=roi_dict.get('metadata', None),
+                     labels=roi_dict.get('labels', None),
+                     geojson=roi_dict.get('geojson', None))
+                 for roi_dict in roi_list),
+                key=lambda x: x.id)
         self.filter_applied = False
 
     def __bool__(self):
