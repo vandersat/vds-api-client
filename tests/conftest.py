@@ -58,6 +58,15 @@ def set_environment_staging():
     vds_api_client.ENVIRONMENT = 'staging'
 
 
+@pytest.fixture()
+def set_auth():
+    """
+    To be used when credentials are required for a test without using the
+    vds api base class explicitly
+    """
+    vds_api_client.AUTH = os.environ.get('VDS_USER'), os.environ.get('VDS_PASS')
+
+
 @pytest.fixture
 def testdata_dir():
     '''

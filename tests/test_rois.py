@@ -113,7 +113,7 @@ def test_geojson_init():
     assert str(geojson) == geojson_should
 
 
-def test_geojson_from_shapefile(testdata_dir):
+def test_geojson_from_shapefile(testdata_dir, set_auth):
 
     geojson_should = (
         '{"type": "FeatureCollection", "features": [{"type": "Feature", "id": "0", '
@@ -126,6 +126,14 @@ def test_geojson_from_shapefile(testdata_dir):
     )
     shp_zip = os.path.join(testdata_dir, 'two-rectangles.zip')
 
-    vds = VdsApiBase()  # Necessary for the credentials to be set
     geojson = GeoJson.from_shapefile(shp_zip)
     assert str(geojson) == geojson_should
+
+
+def test_rois_from_geojson(testdata_dir, set_auth):
+
+    shp_zip = os.path.join(testdata_dir, 'two-rectangles.zip')
+    geojson = GeoJson.from_shapefile(shp_zip)
+    rois = Rois.from_geojson(geojson)
+    assert 'lower-left' in rois
+    assert 'shifted' in rois
