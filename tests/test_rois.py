@@ -128,12 +128,3 @@ def test_geojson_from_shapefile(testdata_dir, set_auth):
 
     geojson = GeoJson.from_shapefile(shp_zip)
     assert str(geojson) == geojson_should
-
-
-def test_rois_from_geojson(testdata_dir, set_auth):
-
-    shp_zip = os.path.join(testdata_dir, 'two-rectangles.zip')
-    geojson = GeoJson.from_shapefile(shp_zip)
-    rois = Rois.from_geojson(geojson)
-    assert 'lower-left' in rois
-    assert 'shifted' in rois
