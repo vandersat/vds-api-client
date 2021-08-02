@@ -230,9 +230,15 @@ class Rois(object):
     def __str__(self):
         if self.__bool__():
             nlen = max(max([len(r.name) for r in self._rois]), 10)  # max product length display
-            prod_ls = [(f' {roi.id:7d}  /  [{"X" if roi.display else " "}]  | {roi.name:{nlen}s} ' 
-                        f'| {roi.area:.3e} ha | {roi.created_at:%Y-%m-%d %H:%M} | {roi.description}')
-                       for roi in self._rois]
+            prod_ls = []
+            for roi in self:
+                prod_ls.append(
+                    f' {roi.id:7d}  /  [{"X" if roi.display else " "}]  '
+                    f'| {roi.name:{nlen}s} ' 
+                    f'| {roi.area:.3e} ha '
+                    f'| {roi.created_at:%Y-%m-%d %H:%M} '
+                    f'| {roi.description}',
+                )
             body = '\n'.join(prod_ls)
         else:
             nlen = 9
