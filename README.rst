@@ -1,5 +1,5 @@
 ==============
-vds_api_client
+vds-api-client
 ==============
 
 .. image:: https://badge.fury.io/py/vds-api-client.svg
@@ -63,7 +63,7 @@ Installing the client
 
 The package can be installed directly from PyPI. Activate your environment and then install with
 
-``$ pip install vds_api_client``
+``$ pip install vds-api-client``
 
 With this activated environment one can access the vds cli with
 
