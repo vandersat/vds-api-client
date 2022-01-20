@@ -111,6 +111,10 @@ typed each time. `Set the environment variables <https://www.schrodinger.com/kb/
 ``$VDS_USER`` and ``$VDS_PASS``
 with the correct values to automatically fill in your credentials.
 
+.. note::
+    **With the envvars set, the credentials don't have to be parsed explicitly anymore thus the syntax reduces to:**
+
+``$ vds-api [command]``
 
 Impersonation
 -------------
@@ -123,11 +127,6 @@ Through the CLI this can also be done using the ``--impersonate`` flag. e.g.
 or when credentials were stored already
 
 ``$ vds-api --impersonate "user@company.com" [command]``
-
-.. note::
-    **From this point on, the credentials don't have to be parsed explicitly anymore thus the syntax reduces to:**
-
-``$ vds-api [command]``
 
 Command specific options
 ------------------------
