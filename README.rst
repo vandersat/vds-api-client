@@ -324,10 +324,10 @@ easier using the client methods that allow you to filter the rois.
 
      # ID / DISPLAY # |  # Name #  |   # Area #   |  # Created at #  |       # Description #
     ===============================================================================================
-       25009  /  [X]  | Center     | 1.063e+09 ha | 2020-08-16 12:49 | Center pixels
-       25010  /  [X]  | Right      | 9.949e+08 ha | 2020-08-16 12:58 | Right side pixels
-       25011  /  [X]  | Bottom     | 6.616e+08 ha | 2020-08-16 12:59 | Bottom side pixels
-       30596  /  [ ]  | NewName    | 9.140e+07 ha | 2020-09-18 07:19 | Same rectangle
+       25009  /  [X]  | Center     | 1.063e+05 ha | 2020-08-16 12:49 | Center pixels
+       25010  /  [X]  | Right      | 9.949e+04 ha | 2020-08-16 12:58 | Right side pixels
+       25011  /  [X]  | Bottom     | 6.616e+04 ha | 2020-08-16 12:59 | Bottom side pixels
+       30596  /  [ ]  | NewName    | 9.140e+03 ha | 2020-09-18 07:19 | Same rectangle
 
 **Filters**
 
@@ -350,8 +350,8 @@ and give the corresponding ids:
 
      # ID / DISPLAY # |  # Name #  |   # Area #   |  # Created at #  |       # Description #
     ===============================================================================================
-       25010  /  [X]  | Right      | 9.949e+08 ha | 2020-08-16 12:58 | Right side pixels
-       25011  /  [X]  | Bottom     | 6.616e+08 ha | 2020-08-16 12:59 | Bottom side pixels
+       25010  /  [X]  | Right      | 9.949e+04 ha | 2020-08-16 12:58 | Right side pixels
+       25011  /  [X]  | Bottom     | 6.616e+04 ha | 2020-08-16 12:59 | Bottom side pixels
 
     [25010, 25011]
 
@@ -382,7 +382,7 @@ Updating an Roi's metadata is supported through the roi.update method:
 
      # ID / DISPLAY # |  # Name #  |   # Area #   |  # Created at #  |       # Description #
     ===============================================================================================
-       30596  /  [ ]  | New name   | 9.140e+07 ha | 2020-09-18 07:19 | New description
+       30596  /  [ ]  | New name   | 9.140e+03 ha | 2020-09-18 07:19 | New description
 
 
 **Deleting**
