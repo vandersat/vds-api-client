@@ -22,7 +22,7 @@ def test_rois_filter():
     rois = vds.rois.filter(min_id=25009, max_id=25010)
     assert rois.ids_to_list() == [25009, 25010]
 
-    rois = vds.rois.filter(area_min=1e8, area_max=1e9)
+    rois = vds.rois.filter(area_min=1e4, area_max=1e5)
     assert rois.ids_to_list() == [25010, 25011]
 
     rois = vds.rois.filter(name_regex='Center|Bottom', description_regex='pixels')
