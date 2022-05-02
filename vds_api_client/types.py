@@ -179,7 +179,9 @@ class Rois(object):
         min_id: int
         max_id: int
         area_min: float
+            minimum area in m2
         area_max: float
+            maximum area in m2
         name_regex: str
         description_regex: str
         created_before: dt.datetime

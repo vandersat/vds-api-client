@@ -1,8 +1,6 @@
 # .coveragerc to control coverage.py
 [run]
 branch = True
-source = travis_test
-# omit = bad_file.py
 
 [paths]
 source =

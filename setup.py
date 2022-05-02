@@ -1,6 +1,4 @@
 """
-    Setup file for travis_test.
-    Use setup.cfg to configure your project.
 
     This file was generated with PyScaffold 3.2.3.
     PyScaffold helps you to put up the scaffold of your new Python project.
