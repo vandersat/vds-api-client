@@ -4,6 +4,12 @@ Changelog
 
 Unreleased
 ==========
+
+Version 2.1.4
+=============
+- Remove Travis-ci from project
+- Fix hectare unit scale in roi representation
+- Fix documentation example for get_value with lat keyword
 - Add 3 retries to get_roi_df method before raising an error
 
 Version 2.1.3
