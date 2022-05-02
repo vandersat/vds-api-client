@@ -33,4 +33,4 @@ jobs:
         VDS_USER: ${{ secrets.VDS_USER }}
         VDS_PASS: ${{ secrets.VDS_PASS }}
       run: |
-        pytest
+        pytest tests
