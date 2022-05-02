@@ -4,11 +4,6 @@ vds-api-client
 
 .. image:: https://badge.fury.io/py/vds-api-client.svg
     :target: https://badge.fury.io/py/vds-api-client
-.. image:: https://travis-ci.org/vandersat/vds-api-client.svg?branch=master
-    :target: https://travis-ci.org/vandersat/vds-api-client
-.. image:: https://coveralls.io/repos/github/vandersat/vds-api-client/badge.svg?branch=master
-    :target: https://coveralls.io/github/vandersat/vds-api-client?branch=master
-
 
 
 (Command line) interface to download data batches directly from the VanderSat API
