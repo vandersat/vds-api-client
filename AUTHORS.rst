@@ -1,5 +1,5 @@
-==========
-Developers
-==========
+============
+Contributors
+============
 
-* Teije <tvanderhorst@vandersat.com>
+* teije <teije@planet.com>

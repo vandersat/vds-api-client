@@ -5,6 +5,10 @@ Changelog
 Unreleased
 ==========
 
+Version 2.1.5
+=============
+- Upgrade pyscaffold to 3.3.1
+
 Version 2.1.4
 =============
 - Remove Travis-ci from project
