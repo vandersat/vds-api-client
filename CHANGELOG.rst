@@ -5,6 +5,11 @@ Changelog
 Unreleased
 ==========
 
+Version 2.1.6
+=============
+
+- Only start downloading data if status of API request is 'Ready'
+
 Version 2.1.5
 =============
 - Upgrade pyscaffold to 3.3.1
