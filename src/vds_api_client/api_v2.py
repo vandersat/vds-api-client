@@ -396,8 +396,8 @@ class VdsApiV2(VdsApiBase):
         status_url = f'https://{self.host}/api/v2/api-requests/{uuid}/status'
         self.logger.debug(f'Status request for UUID: {uuid}')
         status_dict = self.get_content(status_url)
-        while status_dict['percentage'] < 100 and status_dict['status'] != 'Ready' and wait_for_complete:
-            time.sleep(self._wait_time)
+        while status_dict['percentage'] < 100 and status_dict['processing_status'] != 'Ready' and wait_for_complete:
+            # time.sleep(self._wait_time)
             status_dict = self.get_content(status_url)
             _ = sys.stderr.write('\t' * 20 + '\b\r')
             progress_bar(status_dict['percentage'] / 100.0)

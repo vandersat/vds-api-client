@@ -5,6 +5,11 @@ Changelog
 Unreleased
 ==========
 
+Version 2.1.7
+=============
+
+- Fix typo in status check
+
 Version 2.1.6
 =============
 
