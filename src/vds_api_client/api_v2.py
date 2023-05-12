@@ -487,7 +487,7 @@ class VdsApiV2(VdsApiBase):
         for chunk in r.iter_content(2048):
             csv.write(chunk)
         csv.seek(0)
-        df = pd.read_csv(csv, index_col=0, parse_dates=True, dayfirst=True, comment='#')
+        df = pd.read_csv(csv, index_col=0, parse_dates=True, comment='#')
         csv.close()
         return df
 
