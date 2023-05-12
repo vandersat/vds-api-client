@@ -4,6 +4,7 @@ Changelog
 
 Unreleased
 ==========
+- Check if 'data' attribute exists before starting a download
 
 Version 2.1.7
 =============
