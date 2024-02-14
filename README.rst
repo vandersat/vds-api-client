@@ -96,6 +96,10 @@ And it is always a good idea to start with a test:
 
 Credentials
 -----------
+
+Username / password
+~~~~~~~~~~~~~~~~~~~
+
 For each api call using the cli, the credentials need to be supplied.
 These can be parsed along with the call by typing them explicitly like:
 
@@ -105,6 +109,48 @@ However, it is also convenient to store the credentials so they don't have to be
 typed each time. `Set the environment variables <https://www.schrodinger.com/kb/1842>`_
 ``$VDS_USER`` and ``$VDS_PASS``
 with the correct values to automatically fill in your credentials.
+
+
+Planet internal SSO
+~~~~~~~~~~~~~~~~~~~
+
+To use Planet SSO get a token using the following procedure
+
+- **Install:**
+  ::
+
+    pip install planet-auth-utils
+
+- **Login:**
+
+  Default login: opens browser for authorization and listens locally for callback.
+
+  ::
+
+    plauth oauth login
+
+- **Get Token:**
+
+  ::
+
+     plauth oauth print-access-token
+
+For each api call using the cli, the credentials need to be supplied.
+These can be parsed along with the call by typing them explicitly like:
+
+``$ vds-api -t $(plauth oauth print-access-token) [command]``
+
+However, it is also convenient to store the credentials so they don't have to be
+typed each time. `Set the environment variable <https://www.schrodinger.com/kb/1842>`_
+``$PL_VDS_OAUTH_TOKEN`` with the correct value to automatically fill in your credentials.
+
+This can be done in one step using this command:
+
+``export PL_VDS_OAUTH_TOKEN=$(plauth oauth print-access-token)``
+
+.. note::
+   The Token will expire every 3600 seconds. If that happens during a
+   session logging in again and re-setting the environment variable will fix it.
 
 .. note::
     **With the envvars set, the credentials don't have to be parsed explicitly anymore thus the syntax reduces to:**
