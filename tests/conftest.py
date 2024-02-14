@@ -52,7 +52,7 @@ def clean_uuid_files():
 
 
 @pytest.fixture(autouse=True)
-def set_environment_staging():
-    vds_api_client.ENVIRONMENT = 'staging'
+def set_environment():
+    vds_api_client.ENVIRONMENT = 'maps'
 
 # EOF

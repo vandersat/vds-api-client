@@ -7,7 +7,7 @@ import time
 from vds_api_client.vds_api_base import VdsApiBase, getpar_fromtext
 from vds_api_client.api_v2 import VdsApiV2
 
-from requests import HTTPError
+from requests import HTTPError, ConnectionError
 setattr(VdsApiV2, '__str__', VdsApiBase.__str__)
 
 vds_user = os.environ.get('VDS_USER', None)
@@ -117,8 +117,8 @@ def download_if_unfinished(api_instance, n_jobs=1):
 @click.option('--impersonate', '-i',
               help='Username to impersonate')
 @click.option('--environment',
-              type=click.Choice(['maps', 'staging', 'test']),
-              help='Environment to use for requests https://{environment}.vandersat.com')
+              type=click.Choice(['maps', 'staging']),
+              help='Environment to use for requests https://maps.vandersat.com or Planet internal staging https://staging.maps.planetary-variables.prod.planet-labs.com')
 @click.pass_context
 def api(ctx, username, password, impersonate, environment):
     ctx.ensure_object(dict)
@@ -135,7 +135,7 @@ def test(ctx):
     vds = VdsApiBase(ctx.obj['user'], ctx.obj['passwd'], debug=False)
     if ctx.obj['impersonate']:
         vds.impersonate(ctx.obj['impersonate'])
-    for environment in ['maps', 'staging', 'test']:
+    for environment in ['maps', 'staging']:
         try:
             vds.environment = environment
             click.echo(vds)
@@ -144,7 +144,7 @@ def test(ctx):
             bv = vds.get_content(status_uri)['backend_version']
             click.echo(f"backend version: {bv}")
             vds.logger.info(f'API RESPONSE TIME: {time.time() - start:0.4f} seconds')
-        except HTTPError:
+        except (HTTPError, ConnectionError):
             vds.logger.info(f'Not authorized for environment: {environment}')
         click.echo()
     vds.logger.info(' ================== Finished ==================')

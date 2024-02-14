@@ -18,3 +18,4 @@ pandas
 retrying
 joblib
 future
+setuptools
