@@ -36,7 +36,9 @@ class Requester(object):
     @property
     def host(self):
         """Get the host with the set environment"""
-        return f'{vac.ENVIRONMENT}.vandersat.com'
+        host_lut = {"maps": "maps.vandersat.com",
+                    "staging": "staging.maps.planetary-variables.prod.planet-labs.com"}
+        return host_lut[vac.ENVIRONMENT]
 
     @host.setter
     def host(self, host):
@@ -46,14 +48,14 @@ class Requester(object):
         Parameters
         ----------
         host: str
-            One of {'maps', 'staging', 'test'}
+            One of {'maps', 'staging'}
         """
         warnings.warn("The `host` property setter will be deprecated soon, use the `environment` "
-                      "property to set the environment {'maps', 'staging', 'test'}")
-        if host in ['maps', 'test', 'staging']:
+                      "property to set the environment {'maps', 'staging'}")
+        if host in ['maps', 'staging']:
             vac.ENVIRONMENT = host
         else:
-            self.logger.critical("Environment unknown, choose from {'maps', 'staging', 'test'}")
+            self.logger.critical("Environment unknown, choose from {'maps', 'staging'}")
             raise ValueError(f'Unexpected server name received: {host}')
         self._load_user_info()
         self.logger.debug(f'Using server address: {self.host}')
@@ -64,10 +66,10 @@ class Requester(object):
 
     @environment.setter
     def environment(self, environment):
-        if environment in ['maps', 'test', 'staging']:
+        if environment in ['maps', 'staging']:
             vac.ENVIRONMENT = environment
         else:
-            self.logger.critical("Environment unknown, choose from {'maps', 'staging', 'test'}")
+            self.logger.critical("Environment unknown, choose from {'maps', 'staging'}")
             raise ValueError(f'Unexpected environment name received: {environment}')
         self._load_user_info()
         self.logger.debug(f'Using host: {self.host}')
