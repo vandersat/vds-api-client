@@ -9,17 +9,17 @@ def test_base_cli(runner):
 
 
 def test_cli_test(runner):
-    result = runner.invoke(api, ['--environment', 'staging', 'test'])
+    result = runner.invoke(api, ['--environment', 'maps', 'test'])
     assert result.exit_code == 0
 
 
 def test_cli_info(runner):
-    result = runner.invoke(api, ['--environment', 'staging', 'info'])
+    result = runner.invoke(api, ['--environment', 'maps', 'info'])
     assert result.exit_code == 0
 
 
 def test_cli_grid_base(runner, tmpdir):
-    result = runner.invoke(api, ['--environment', 'staging',
+    result = runner.invoke(api, ['--environment', 'maps',
                                  'grid',
                                  '--product', 'TEST-PRODUCT_V001_25000',
                                  '--lon_range', '-5.5', '5.0',
@@ -34,7 +34,7 @@ def test_cli_grid_base(runner, tmpdir):
 
 
 def test_cli_grid_nczip(runner, tmpdir):
-    result = runner.invoke(api, ['--environment', 'staging',
+    result = runner.invoke(api, ['--environment', 'maps',
                                  'grid',
                                  '--product', 'TEST-PRODUCT_V001_25000',
                                  '--lon_range', '-5.5', '5.0',
@@ -51,7 +51,7 @@ def test_cli_grid_nczip(runner, tmpdir):
 
 
 def test_cli_ts_base(runner, tmpdir):
-    result = runner.invoke(api, ['--environment', 'staging',
+    result = runner.invoke(api, ['--environment', 'maps',
                                  'ts',
                                  '--product', 'TEST-PRODUCT_V001_25000',
                                  '--latlon', '66.875', '-5.875',
@@ -66,7 +66,7 @@ def test_cli_ts_base(runner, tmpdir):
 
 
 def test_cli_v2_ts_allopts(runner, tmpdir):
-    result = runner.invoke(api, ['--environment', 'staging', 'ts',
+    result = runner.invoke(api, ['--environment', 'maps', 'ts',
                                  '--product', 'TEST-PRODUCT_V001_25000',
                                  '--latlon', '66.875', '-5.875',
                                  '--date_range', '2020-01-01', '2020-01-03',

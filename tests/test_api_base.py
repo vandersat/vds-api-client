@@ -34,8 +34,8 @@ def test_load_info(credentials):
 
 def test_host_setter(credentials):
     vds = VdsApiBase(credentials['user'], credentials['pw'])
-    vds.host = 'staging'
-    assert vds.host == 'staging.vandersat.com'
+    vds.host = 'maps'
+    assert vds.host == 'maps.vandersat.com'
     with pytest.raises(ValueError):
         vds.host = 'nonexisting'
 
