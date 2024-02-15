@@ -12,6 +12,7 @@ setattr(VdsApiV2, '__str__', VdsApiBase.__str__)
 
 vds_user = os.environ.get('VDS_USER', None)
 vds_pass = os.environ.get('VDS_PASS', None)
+oauth_token = os.environ.get('PL_VDS_OAUTH_TOKEN', None)
 
 creds = os.path.join(os.environ.get('TEMP', os.environ.get('TMP', '/tmp')), 'vds_creds.vds')
 if os.path.exists(creds):
@@ -21,7 +22,7 @@ if os.path.exists(creds):
     else:
         os.remove(creds)
 
-vds_user = '$VDS_USER (Not set)' if vds_user is None else vds_user
+user_show = '$VDS_USER (Not set)' if vds_user is None else vds_user
 pass_show = '$VDS_PASS (Not set)' if vds_pass is None else '$VDS_PASS'
 
 
@@ -109,21 +110,25 @@ def download_if_unfinished(api_instance, n_jobs=1):
 
 @click.group(short_help='Get data from VdS API')
 @click.option('--username', '-u',
-              default=vds_user,
-              show_default=vds_user)
+              default=vds_user if vds_user else None,
+              show_default=vds_user if vds_user else user_show)
 @click.option('--password', '-p',
-              default=vds_pass if vds_pass else pass_show,
+              default=vds_pass if vds_pass else None,
               show_default=pass_show)
+@click.option('--oauth-token', '-t',
+              default=oauth_token if oauth_token else None,
+              show_default=True)
 @click.option('--impersonate', '-i',
               help='Username to impersonate')
 @click.option('--environment',
               type=click.Choice(['maps', 'staging']),
               help='Environment to use for requests https://maps.vandersat.com or Planet internal staging https://staging.maps.planetary-variables.prod.planet-labs.com')
 @click.pass_context
-def api(ctx, username, password, impersonate, environment):
+def api(ctx, username, password, oauth_token, impersonate, environment):
     ctx.ensure_object(dict)
     ctx.obj['user'] = username
     ctx.obj['passwd'] = password
+    ctx.obj['oauth_token'] = oauth_token
     ctx.obj['impersonate'] = impersonate
     ctx.obj['environment'] = environment
     pass
@@ -132,7 +137,7 @@ def api(ctx, username, password, impersonate, environment):
 @api.command(short_help='test the api response')
 @click.pass_context
 def test(ctx):
-    vds = VdsApiBase(ctx.obj['user'], ctx.obj['passwd'], debug=False)
+    vds = VdsApiBase(ctx.obj['user'], ctx.obj['passwd'], oauth_token=ctx.obj['oauth_token'], debug=False)
     if ctx.obj['impersonate']:
         vds.impersonate(ctx.obj['impersonate'])
     for environment in ['maps', 'staging']:
@@ -157,7 +162,7 @@ def test(ctx):
 @click.option('--roi', '-r', is_flag=True)
 @click.pass_context
 def info(ctx, all_info, user_, product_list, roi):
-    vds = VdsApiBase(ctx.obj['user'], ctx.obj['passwd'], debug=False)
+    vds = VdsApiBase(ctx.obj['user'], ctx.obj['passwd'], oauth_token=ctx.obj['oauth_token'], debug=False)
     if ctx.obj['environment'] is not None:
         vds.host = ctx.obj['environment']
     if ctx.obj['impersonate']:
@@ -212,7 +217,7 @@ def info(ctx, all_info, user_, product_list, roi):
 def grid(ctx, config_file, products, lon_range, lat_range, date_range,
          fmt, n_proc, outfold, zipped, verbose):
 
-    vds = VdsApiV2(ctx.obj['user'], ctx.obj['passwd'], debug=False)
+    vds = VdsApiV2(ctx.obj['user'], ctx.obj['passwd'],  oauth_token=ctx.obj['oauth_token'], debug=False)
     if ctx.obj['environment'] is not None:
         vds.host = ctx.obj['environment']
     if ctx.obj['impersonate']:
@@ -265,7 +270,7 @@ def grid(ctx, config_file, products, lon_range, lat_range, date_range,
 def ts(ctx, config_file, products, latlons, rois, date_range, fmt,
        masked, av_win, backward, clim, t, provide_coverage, outfold, verbose):
 
-    vds = VdsApiV2(ctx.obj['user'], ctx.obj['passwd'], debug=False)
+    vds = VdsApiV2(ctx.obj['user'], ctx.obj['passwd'], oauth_token=ctx.obj['oauth_token'], debug=False)
     if ctx.obj['environment'] is not None:
         vds.host = ctx.obj['environment']
     if ctx.obj['impersonate']:

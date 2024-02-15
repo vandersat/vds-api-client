@@ -3,6 +3,7 @@ import vds_api_client as vac
 import json
 import requests
 import warnings
+from typing import Optional
 from builtins import object
 
 
@@ -19,10 +20,17 @@ class Requester(object):
         raise NotImplementedError('Call this on VdsApiV2 or VdsApiBase objects')
 
     @staticmethod
-    def set_auth(auth):
-        """Set the authentication tuple
+    def set_auth(auth, oauth_token: Optional[str] = None):
+        """Set the authentication tuple or oauth token
         """
-        vac.AUTH = auth
+        username, password = auth
+        if username and password and oauth_token:
+            raise ValueError("Use either username/password or oauth_token")
+        elif oauth_token:
+            vac.HEADERS.update({'Authorization': f'Bearer {oauth_token}'})
+            vac.AUTH = None
+        else:
+            vac.AUTH = auth
 
     @property
     def auth(self):

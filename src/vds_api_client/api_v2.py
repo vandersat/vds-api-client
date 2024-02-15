@@ -4,6 +4,7 @@ import sys
 import os
 import time
 from math import floor
+from typing import Optional
 from collections import OrderedDict
 import re
 from glob import glob
@@ -50,8 +51,8 @@ class VdsApiV2(VdsApiBase):
     """
         Extension of the VdsApiBase class with all api/v2 related methods
     """
-    def __init__(self, username=None, password=None, debug=True):
-        super(VdsApiV2, self).__init__(username, password, debug=debug)
+    def __init__(self, username=None, password=None, oauth_token:Optional[str]=None, debug=True):
+        super(VdsApiV2, self).__init__(username, password, oauth_token=oauth_token, debug=debug)
         self.async_requests = []
         self.uuids = []
         self._remove_after_dowload = []

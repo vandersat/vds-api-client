@@ -7,6 +7,7 @@ from joblib import delayed, Parallel
 import os
 import warnings
 import logging
+from typing import Optional
 
 # This project
 from vds_api_client.types import Rois, Products
@@ -163,11 +164,14 @@ class VdsApiBase(Requester):
         Password for the vds api data service
         If left empty, the username will be read from
         the environment variable $VDS_PASS
+    oauth_token
+        oauth token
+        Can not be used at the same time as username or password
     debug: bool or int
         Set True for higher verbosity,
         or use integer to set streamlevel (10 <= all messages, 50 > no messages)
     """
-    def __init__(self, username=None, password=None, debug=True):
+    def __init__(self, username=None, password=None, oauth_token: Optional[str] = None, debug=True):
         self.rois = Rois(None)
         self.products = Products(None)
         streamlevel = debug if isinstance(debug, int) else (10 if debug else 20)
@@ -184,12 +188,13 @@ class VdsApiBase(Requester):
         self._ndskipped = []
         self._notreached = 0
         self._failed = []
-        if username and password:
-            self.set_auth((username, password))
+        if (username and password) or oauth_token:
+            self.set_auth((username, password), oauth_token=oauth_token)
         else:
             self.logger.info('Extracting credentials from environment variables')
             self.set_auth((os.environ.get('VDS_USER', None),
-                           os.environ.get('VDS_PASS', None)))
+                           os.environ.get('VDS_PASS', None)),
+                          oauth_token=os.environ.get('PL_VDS_OAUTH_TOKEN', None))
         self._load_user_info()
         self.logger.info(' ================== VDS_API initialized ==================\n')
 
@@ -199,7 +204,11 @@ class VdsApiBase(Requester):
         self.usr_dict = self.get_user_info()
 
     def __str__(self):
-        show = f'{self.auth[0]} @ {self.host}'
+        if self.auth is not None:
+            user_repr = self.auth[0]
+        else:
+            user_repr = 'token'
+        show = f'{user_repr} @ {self.host}'
         if 'X-VDS-UserId' in self.headers:
             show = (f'{self.headers["X-VDS-UserId"]} --impersonated by-- {show}'
                     f'\n\ttrigger .forget() to remove impersonation')
