@@ -2,8 +2,9 @@
 Changelog
 =========
 
-Unreleased
-==========
+Version 2.2.0
+=============
+- Add SSO Support for Planeteers
 - Check if 'data' attribute exists before starting a download
 
 Version 2.1.7
