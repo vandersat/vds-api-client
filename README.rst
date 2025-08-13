@@ -6,6 +6,8 @@ vds-api-client
     :target: https://badge.fury.io/py/vds-api-client
 
 
+**Important** This project is archived as the API is no longer operational
+
 (Command line) interface to download data batches directly from the VanderSat API
 
 
